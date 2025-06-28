@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameObject.h"
+#include "../UserCommon/GameObject.h"
 
 class Wall: public GameObject {
     bool weak = false;

@@ -1,5 +1,4 @@
 #include "TankAlgorithm2.h"
-#include <string>
 
 TankAlgorithm2::TankAlgorithm2(int player_index, int tank_index) : MyTankAlgorithm(player_index, tank_index) {}
 

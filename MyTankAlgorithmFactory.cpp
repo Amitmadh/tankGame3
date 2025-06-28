@@ -1,6 +1,4 @@
 #include "MyTankAlgorithmFactory.h"
-#include "TankAlgorithm1.h"
-#include "TankAlgorithm2.h"
 
 std::unique_ptr<TankAlgorithm> MyTankAlgorithmFactory::create(int player_index, int tank_index) const {
     if (player_index == 1) {

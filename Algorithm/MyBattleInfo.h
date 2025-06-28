@@ -1,5 +1,6 @@
 #pragma once
-#include "common/BattleInfo.h"
+
+#include "../common/BattleInfo.h"
 #include <vector>
 
 class MyBattleInfo : public BattleInfo {

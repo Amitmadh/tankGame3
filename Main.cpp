@@ -1,10 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "GameManager.h"
+#include "GameManager/GameManager.h"
 #include "MyTankAlgorithmFactory.h"
 #include "MyPlayerFactory.h"
-#include "Tank.h"
 
 
 int main(int argc, char* argv[]) {

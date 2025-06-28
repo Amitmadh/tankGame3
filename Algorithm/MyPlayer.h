@@ -1,5 +1,5 @@
 #pragma once
-#include "common/Player.h"
+#include "../common/Player.h"
 #include <utility>
 
 class MyPlayer : public Player {

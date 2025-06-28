@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GameObject.h"
-#include "common/TankAlgorithm.h"
-#include "common/ActionRequest.h"
+#include "../UserCommon/GameObject.h"
+#include "../common/TankAlgorithm.h"
+#include "../common/ActionRequest.h"
 #include <iostream>
 #include <string>
 #include <memory>

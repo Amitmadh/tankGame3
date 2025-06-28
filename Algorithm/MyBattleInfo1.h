@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MyBattleInfo.h"
 #include <vector>
 

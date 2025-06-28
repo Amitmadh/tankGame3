@@ -1,5 +1,5 @@
 #include "MyTankAlgorithm.h"
-#include <iostream>
+
 
 MyTankAlgorithm::MyTankAlgorithm(int player_index, int tank_index) : tank_index(tank_index){
     if (player_index == 1) {

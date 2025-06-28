@@ -1,15 +1,15 @@
 #pragma once
 
-#include "GameObject.h"
+#include "../common/TankAlgorithm.h"
+#include "../common/PlayerFactory.h"
+#include "../common/Player.h"
+#include "../common/TankAlgorithmFactory.h"
+#include "../common/ActionRequest.h"
+#include "../UserCommon/GameObject.h"
+#include "../UserCommon/Shell.h"
 #include "Tank.h"
 #include "Wall.h"
 #include "Mine.h"
-#include "Shell.h"
-#include "common/TankAlgorithm.h"
-#include "common/PlayerFactory.h"
-#include "common/Player.h"
-#include "common/TankAlgorithmFactory.h"
-#include "common/ActionRequest.h"
 #include "MySatelliteView.h"
 #include <iostream>
 #include <vector>

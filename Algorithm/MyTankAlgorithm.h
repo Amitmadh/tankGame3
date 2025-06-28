@@ -1,9 +1,11 @@
 #pragma once
 
-#include "common/TankAlgorithm.h"
+#include "../common/TankAlgorithm.h"
+#include "../UserCommon/GameUtilis.h"
 #include "MyBattleInfo.h"
-#include "GameUtilis.h"
 #include <vector>
+#include <iostream>
+
 
 class MyTankAlgorithm : public TankAlgorithm{
     public:

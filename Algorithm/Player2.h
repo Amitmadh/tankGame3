@@ -2,7 +2,7 @@
 
 #include "Player1.h"
 #include "MyBattleInfo2.h"
-#include "Shell.h"
+#include "../UserCommon/Shell.h"
 
 class Player2 : public MyPlayer {
     std::vector<std::vector<char>> board;

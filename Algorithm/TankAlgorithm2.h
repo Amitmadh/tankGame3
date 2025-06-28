@@ -1,6 +1,8 @@
 #pragma once
+
 #include "MyTankAlgorithm.h"
 #include "MyBattleInfo2.h"
+#include <string>
 
 class TankAlgorithm2 : public MyTankAlgorithm {
     MyBattleInfo2 battle_info;

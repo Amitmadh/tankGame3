@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common/PlayerFactory.h"
-#include "Player1.h"
-#include "Player2.h"
+#include "Algorithm/Player1.h"
+#include "Algorithm/Player2.h"
 
 class MyPlayerFactory : public PlayerFactory {
 public:

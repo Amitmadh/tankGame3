@@ -1,6 +1,7 @@
 #pragma once
+
+#include "../UserCommon/Shell.h"
 #include "MyBattleInfo.h"
-#include "Shell.h"
 #include <vector>
 
 class MyBattleInfo2 : public MyBattleInfo {
