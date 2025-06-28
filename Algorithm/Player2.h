@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Player1.h"
 #include "MyBattleInfo2.h"
+#include "MyPlayer.h"
 #include "../UserCommon/Shell.h"
 
 class Player2 : public MyPlayer {
