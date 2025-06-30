@@ -69,7 +69,6 @@ void GameManager::resetState(){
     height = 0;
     max_steps = 0;
     num_shells = 0;
-    verbose = false;
     number_of_total_tanks = 0;
     living_tanks_player1 = 0;
     living_tanks_player2 = 0;
