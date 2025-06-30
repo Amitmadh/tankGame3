@@ -290,3 +290,54 @@ Direction rotate(Direction curr_dir, Direction rotation_dir) {
             return curr_dir;
     }  
 }
+
+std::string stringGameResult(GameResult& game_result, size_t map_width, size_t map_height) {
+    std::string reason, winner, remaining_tanks_player_1, remaining_tanks_player_2, game_state, rounds;
+    winner =  std::to_string(game_result.winner);
+    switch (game_result.reason) {
+        case GameResult::ALL_TANKS_DEAD:
+            reason = "ALL_TANKS_DEAD";
+            break;
+        case GameResult::MAX_STEPS:
+            reason = "MAX_STEPS";
+            break;
+        case GameResult::ZERO_SHELLS:
+            reason = "ZERO_SHELLS";
+            break;
+    }
+    if (game_result.remaining_tanks.size() >= 2) {
+        remaining_tanks_player_1 = std::to_string(game_result.remaining_tanks[0]);
+        remaining_tanks_player_2 = std::to_string(game_result.remaining_tanks[1]);
+    }
+    rounds = std::to_string(game_result.rounds);
+    for(size_t y = 0; y < map_height; y++){
+        for(size_t x = 0; x < map_width; x++){
+            if(game_result.gameState->getObjectAt(x, y) == ' '){
+                game_state += '_';
+            }
+            else{
+                game_state += game_result.gameState->getObjectAt(x, y);
+            }
+        }
+        game_state += "\n";
+    }
+    return "Winner: " + winner + ", Reason: " + reason + ", Rounds: " + rounds +
+           ", P1 Tanks: " + remaining_tanks_player_1 +
+           ", P2 Tanks: " + remaining_tanks_player_2 +
+           ", Final State: \n" + game_state;    
+
+}
+
+std::string generateTimeBasedString() {
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::chrono::duration<double> ts = now.time_since_epoch();
+
+    constexpr std::size_t NUM_DIGITS = 9;
+    std::size_t NUM_DIGITS_P = static_cast<std::size_t>(std::pow(10, NUM_DIGITS));
+
+    std::ostringstream oss;
+    oss << std::setw(NUM_DIGITS) << std::setfill('0')
+        << static_cast<std::size_t>(ts.count() * NUM_DIGITS_P) % NUM_DIGITS_P;
+
+    return oss.str();
+}

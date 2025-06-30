@@ -1,7 +1,6 @@
 #include "MyPlayer.h"
 
 MyPlayer::MyPlayer(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells) :
-    Player(player_index, x, y , max_steps, num_shells),
     player_index(player_index), width(x), height(y), max_steps(max_steps), num_shells(num_shells) {
 }
 

@@ -1,16 +1,17 @@
 #pragma once
 
 #include "../common/TankAlgorithm.h"
-#include "../common/PlayerFactory.h"
 #include "../common/Player.h"
-#include "../common/TankAlgorithmFactory.h"
+#include "../common/AbstractGameManager.h"
+#include "../common/GameResult.h"
 #include "../common/ActionRequest.h"
 #include "../UserCommon/GameObject.h"
 #include "../UserCommon/Shell.h"
+#include "../UserCommon/GameUtilis.h"
+#include "../UserCommon/MySatelliteView.h"
 #include "Tank.h"
 #include "Wall.h"
 #include "Mine.h"
-#include "MySatelliteView.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>  // For std::erase, std::remove
@@ -21,49 +22,51 @@
 #include <sstream>
 #include <regex>
 
-class GameManager {
+class GameManager : public AbstractGameManager {
 private:
-    int width;
-    int height;
-    int max_steps;
-    int num_shells;
-    int number_of_total_tanks;
-    int living_tanks_player1;
-    int living_tanks_player2;
-    std::unique_ptr<PlayerFactory> player_factory;
-    std::unique_ptr<TankAlgorithmFactory> tank_factory;
+    size_t width = 0;
+    size_t height = 0;
+    size_t max_steps = 0;
+    size_t num_shells = 0;
+    bool verbose = false;
+    size_t number_of_total_tanks = 0;
+    size_t living_tanks_player1 = 0;
+    size_t living_tanks_player2 = 0;
 
     std::vector<std::unique_ptr<Tank>> tanks; 
     std::vector<std::unique_ptr<Shell>> shells; 
     std::vector<std::unique_ptr<Wall>> walls; 
     std::vector<std::unique_ptr<Mine>> mines;
 
-    std::vector<std::unique_ptr<Player>> players;
-    
+    Player* player1;
+    Player* player2;
     
     std::vector<std::vector<std::vector<GameObject*>>> board;
 
     std::vector<std::string> output_messages;
     std::string output_file_name;
     bool should_exit = false;
+    GameResult game_result;
 
 public:
-    // The constructor is ChatGPT generated
-    template<typename PF, typename TF>
-    GameManager(PF&& pf, TF&& tf)
-        : player_factory(std::make_unique<PF>(std::forward<PF>(pf))),
-          tank_factory(std::make_unique<TF>(std::forward<TF>(tf))) {}
+    GameManager(bool verbose);
 
-    // reading board functions
-    void readBoard(char* input_file);
-    
     // Runs the game
-    void run();
-
-    // Runs the game with prints
-    void debug_run();
+    GameResult run(
+        size_t map_width, size_t map_height,
+        const SatelliteView& map,
+        size_t max_steps, size_t num_shells,
+        Player& player1, Player& player2,
+        TankAlgorithmFactory player1_tank_algo_factory,
+        TankAlgorithmFactory player2_tank_algo_factory) override;
 
 private:
+    // Runs the actual game
+    void runGame();
+
+    // Runs the actual game with prints
+    void debug_runGame();
+
     // Adding a GameObject to the game
     void addTank(int x, int y, Direction direction, int serial, int player,  int tank_index, std::unique_ptr<TankAlgorithm> tank_algorithm);
     void addWall(int x, int y);
@@ -79,7 +82,7 @@ private:
     // Performs a step
     void step();
 
-    void setSatelliteView(MySatelliteView& satellite) const;
+    void setSatelliteView(MySatelliteView* satellite) const;
 
     // Moves all the shells
     void moveAllShells();
@@ -101,11 +104,11 @@ private:
     void clearBoardCollision(std::vector<GameObject*>& colided_objects);
 
     // Emptying board[x][y] from objects
-    void emptyCell(int x, int y);
+    void emptyCell(size_t x, size_t y);
 
     // After the movement of objects, this function will be called to empty necessary cells (with two or more incompatible objects), weaken walls...
     void boardChecks();
-    void boardChecksHelper(int& i, int& j, int& num_of_tanks, int& num_of_shells, int& num_of_walls, int& num_of_mines); //herlper function of boardChecks (num of objects in cell (i, j))
+    void boardChecksHelper(size_t& i, size_t& j, int& num_of_tanks, int& num_of_shells, int& num_of_walls, int& num_of_mines); //herlper function of boardChecks (num of objects in cell (i, j))
 
     // This function checks if all the actions are legal, and if they aren't write "bad step"
     void checkActionLegality();
@@ -140,9 +143,10 @@ private:
     // Writes the actions of the current step
     void writeStepActions() const;
 
-    // readBoard helper functions:
-    void readFirstFiveLines(std::ifstream& file); // helper function of readBoard
-    void readBoardLines(std::ifstream& file); // helper function of readBoard
-    void checkStartingWinningCondition(); // helper function of readBoard
-    int parseLine(const std::string& line, const std::string& key) const; // helper function of readBoard (ChatGPT generated)
+    void setGameResult(int reason, int round_num);
+
+    // run helper functions:
+    void checkStartingWinningCondition();
+    void initializeGameBoard(const SatelliteView& map, TankAlgorithmFactory& player1_tank_algo_factory, TankAlgorithmFactory& player2_tank_algo_factory);
+    void resetState();
 };

@@ -1,80 +1,52 @@
 #include "GameManager.h"
 
-int GameManager::parseLine(const std::string& line, const std::string& key) const{
-    std::regex pattern(key + R"(\s*=\s*(\d+))");
-    std::smatch match;
-    if (std::regex_search(line, match, pattern)) {
-        return std::stoi(match[1]);
-    } else {
-        throw std::runtime_error("Error: Could not parse " + key + " from line: " + line);
-    }    
-}
+GameManager::GameManager(bool verbose) : verbose(verbose) {}
 
-void GameManager::readFirstFiveLines(std::ifstream& file){
-    std::string line;
-    // Line 1: Description (ignored)
-    if (!std::getline(file, line)) {
-        std::cout << "Error: File is empty or missing description line." << std::endl;
+
+void GameManager::checkStartingWinningCondition(){
+    bool tie = living_tanks_player1 == 0 && living_tanks_player2 == 0;
+    bool player1_wins = living_tanks_player1 != 0 && living_tanks_player2 == 0;
+    bool player2_wins = living_tanks_player1 == 0 && living_tanks_player2 != 0;
+    if (tie || player1_wins || player2_wins){
+        setGameResult(0, 0);
         should_exit = true;
-        file.close();
-        return;
-    }
-    try {
-        // Line 2: MaxSteps
-        if (!std::getline(file, line)) throw std::runtime_error("Missing MaxSteps line");
-        max_steps = parseLine(line, "MaxSteps");
-
-        // Line 3: NumShells
-        if (!std::getline(file, line)) throw std::runtime_error("Missing NumShells line");
-        num_shells = parseLine(line, "NumShells");
-
-        // Line 4: Rows
-        if (!std::getline(file, line)) throw std::runtime_error("Missing Rows line");
-        height = parseLine(line, "Rows");
-        
-        // Line 5: Cols
-        if (!std::getline(file, line)) throw std::runtime_error("Missing Cols line");
-        width = parseLine(line, "Cols");
-    }
-    catch (const std::runtime_error& e) {
-        std::cout << e.what() << std::endl;
-        should_exit = true;
-        file.close();
-        return;
-    }
-}
-
-void GameManager::readBoardLines(std::ifstream& file){
-    char ch;
-    for (int y = 0; y < height; y++){
-        for (int x = 0; x < width + 1; x++){
-            file.get(ch); // puts a char in ch
-            if ((ch == '\n' && x == width) || (file.eof() && x == width && y == 0)){
-                // Exact length
-                break;
+        if(verbose){
+            std::ofstream file(output_file_name);
+            if (!file) {
+            std::cout << "Error: Output file couldn't be opened" << std::endl;
             }
-            else if ((ch == '\n' || file.eof()) && x < width){
-                // Underflow
-                break;
-            }
-            else if (ch != '\n' && x == width){
-                // Overflow
-                while (file.get(ch)) { // Skipping the rest of the line
-                    if (ch == '\n'){
-                        break;
-                    }
+            else{
+                if (tie){
+                   file << "Tie, both players have zero tanks" << std::endl;
                 }
+                else if(player1_wins){
+                   file << "Player 1 won with " << living_tanks_player1 << " tanks still alive" << std::endl;
+                }
+                else if(player2_wins){
+                    file << "Player 2 won with " << living_tanks_player2 << " tanks still alive" << std::endl;
+                }
+                file.close();
             }
-            else if (ch == '#'){
+        }
+    }
+}
+
+
+void GameManager::initializeGameBoard(const SatelliteView& map, TankAlgorithmFactory& player1_tank_algo_factory, TankAlgorithmFactory& player2_tank_algo_factory){
+    char ch;
+    for (size_t y = 0; y < height; y++){
+        for (size_t x = 0; x < width; x++){
+            ch = map.getObjectAt(x, y);
+            if (ch == '#'){
                 addWall(x, y);
             }
             else if (ch == '1') {
-                addTank(x, y, Direction::L, number_of_total_tanks, 1, living_tanks_player1, tank_factory->create(1, living_tanks_player1));
+                addTank(x, y, Direction::L, number_of_total_tanks, 1, living_tanks_player1, player1_tank_algo_factory(1, living_tanks_player1));
                 living_tanks_player1++;
                 number_of_total_tanks++;
             }
             else if (ch == '2') {
-                addTank(x, y, Direction::R, number_of_total_tanks, 2, living_tanks_player2, tank_factory->create(2, living_tanks_player2));
+                addTank(x, y, Direction::R, number_of_total_tanks, 2, living_tanks_player2, player2_tank_algo_factory(2, living_tanks_player2));
                 living_tanks_player2++;
                 number_of_total_tanks++;
             }
@@ -85,82 +57,23 @@ void GameManager::readBoardLines(std::ifstream& file){
     }
 }
 
-void GameManager::checkStartingWinningCondition(){
-    // Checking winning conditions already
-    if (living_tanks_player1 == 0 && living_tanks_player2 == 0){  // Tie
-        std::ofstream file(output_file_name);
-        if (file) {
-            file << "Tie, both players have zero tanks" << std::endl;
+void GameManager::resetState(){
+    // Clear all objects
+    for (size_t x = 0; x < width; x++){
+        for (size_t y = 0; y < height; y++){
+            emptyCell(x, y);
         }
-        else {
-            std::cout << "Error: Output file couldn't be opened" << std::endl;
-        }
-        file.close();
-        should_exit = true;
     }
-    else if (living_tanks_player1 != 0 && living_tanks_player2 == 0){ // Player 1 wins
-        std::ofstream file(output_file_name);
-        if (file) {
-            file << "Player 1 won with " << living_tanks_player1 << " tanks still alive" << std::endl;
-        }
-        else {
-            std::cout << "Error: Output file couldn't be opened" << std::endl;
-        }
-        file.close();
-        should_exit = true;
-    }
-    else if (living_tanks_player1 == 0 && living_tanks_player2 != 0){ // Player 2 wins
-        std::ofstream file(output_file_name);
-        if (file) {
-            file << "Player 2 won with " << living_tanks_player2 << " tanks still alive" << std::endl;
-        }
-        else {
-            std::cout << "Error: Output file couldn't be opened" << std::endl;
-        }
-        file.close();
-        should_exit = true;
-    }
-}
 
-
-void GameManager::readBoard(char* input_file){
-    std::ifstream file(input_file);
-    if (!file) {
-        std::cout << "Error: Cannot open file " << input_file << std::endl;
-        should_exit = true;
-        return;
-    }
-    // Reading first 5 lines of the instructions
-    readFirstFiveLines(file);
-    if(should_exit){
-        return;
-    }
-    // initializing board size
-    board = std::vector<std::vector<std::vector<GameObject*>>>(
-    width, std::vector<std::vector<GameObject*>>(height));
-
-    // initializing players
-    players.push_back(player_factory->create(1, width, height, max_steps, num_shells));
-    players.push_back(player_factory->create(2, width, height, max_steps, num_shells));
-
-    // initializing the output file name
-    output_file_name = "output_" + std::string(input_file);
-
-    // ---------- READING BOARD ----------
+    width = 0;
+    height = 0;
+    max_steps = 0;
+    num_shells = 0;
+    verbose = false;
+    number_of_total_tanks = 0;
     living_tanks_player1 = 0;
     living_tanks_player2 = 0;
-    number_of_total_tanks = 0;
-    readBoardLines(file);
-    file.close();
-
-    // Checking the starting winning conditions
-    checkStartingWinningCondition();
-    if(should_exit){
-        return;
-    }
-    
-    // Initializing step_output_messages
-    output_messages.resize(number_of_total_tanks);
+    should_exit = false;
 }
 
 
@@ -237,8 +150,8 @@ void GameManager::deleteObject(GameObject* object_to_delete) {
 
 // ------------------------------- For debug purposes -----------------------------------------
 void GameManager::printing_board() const{
-    for (int y = 0; y < height; y++){
-        for (int x = 0; x < width; x++){
+    for (size_t y = 0; y < height; y++){
+        for (size_t x = 0; x < width; x++){
             if (board[x][y].empty()){
                 std::cout << "_";
                 continue;
@@ -258,18 +171,18 @@ void GameManager::printing_board() const{
     }
 }
 
-void GameManager::debug_run(){
-    if (should_exit){
-        return;
-    }
+void GameManager::debug_runGame(){
     int sudden_death = 40;
+    int sudden_death_counter = 0;
     bool sudden_death_flag = false;
-    int step_counter = 1;
-    std::cout << "Initial board:" << std::endl;
+    size_t step_counter = 1;
+    if(verbose){
+        std::ofstream file(output_file_name); // Opens and overwrites if exists
+        file.close(); // Done — file is now created or cleared
+    }
+    std::cout << "map_width: " << width << ", map_height: " << height << ", max_steps: " << max_steps << ", num_shells: " << num_shells << ", Initial board:" << std::endl;
     printing_board();
-    std::ofstream file(output_file_name); // Opens and overwrites if exists
-    file.close(); // Done — file is now created or cleared
-    while(sudden_death != 0 && step_counter <= max_steps){
+    while(sudden_death_counter != sudden_death && step_counter <= max_steps){
         std::cout << "-------------- " << "Step " << step_counter << " --------------" << std::endl;
         step();
         std::cout << "After step " << step_counter << ":" << std::endl;
@@ -277,48 +190,12 @@ void GameManager::debug_run(){
             tank->debug_print();
         }
         printing_board();
-
         if (sudden_death_flag){
-            sudden_death--;
-        }
-        if(checkResult()){ // The game ended
-            return;
-        }
-        if(!sudden_death_flag){
-            sudden_death_flag = checkSuddenDeath();
-        }
-        step_counter++;
-    }
-    if (step_counter > max_steps){ // Reached max step
-        writeToOutputFile("Tie, reached max steps = " + std::to_string(max_steps) + ", player 1 has " +
-        std::to_string(living_tanks_player1) + " tanks, player 2 has " + std::to_string(living_tanks_player2) + " tanks");
-    }
-    else{ // All tanks are out of shells
-        writeToOutputFile("Tie, both players have zero shells for " + std::to_string(sudden_death) + " steps");
-    }
-}
-
-// -------------------------------------------- run and step functions ------------------------------------------------
-
-void GameManager::run(){
-    if (should_exit){
-        return;
-    }
-
-    int sudden_death = 40;
-    bool sudden_death_flag = false;
-    int step_counter = 1;
-
-    std::ofstream file(output_file_name); // Opens and overwrites if exists
-    file.close(); // Done — file is now created or cleared
-
-    while(sudden_death != 0 && step_counter <= max_steps){
-        step();
-        if (sudden_death_flag){
-            sudden_death--;
+            sudden_death_counter++;
         }
         if(checkResult()){
             // The game ended
+            setGameResult(0, step_counter);
             return;
         }
         if(!sudden_death_flag){
@@ -328,55 +205,148 @@ void GameManager::run(){
     }
     if (step_counter > max_steps){
         // Reached max step
-        writeToOutputFile("Tie, reached max steps = " + std::to_string(max_steps) + ", player 1 has " +
-        std::to_string(living_tanks_player1) + " tanks, player 2 has " + std::to_string(living_tanks_player2) + " tanks");
+        setGameResult(1, max_steps);
+        if(verbose){
+            writeToOutputFile("Tie, reached max steps = " + std::to_string(max_steps) + ", player 1 has " +
+            std::to_string(living_tanks_player1) + " tanks, player 2 has " + std::to_string(living_tanks_player2) + " tanks");
+        }
     }
     else{
         // All tanks are out of shells
-        writeToOutputFile("Tie, both players have zero shells for " + std::to_string(sudden_death) + " steps");
+        step_counter--; // becasue we added an extra step at the end
+        setGameResult(2, step_counter);
+        if(verbose){
+            writeToOutputFile("Tie, both players have zero shells for " + std::to_string(sudden_death) + " steps");
+        }
     }
-    return;
+}
+
+// -------------------------------------------- run and step functions ------------------------------------------------
+GameResult GameManager::run(
+    size_t map_width, size_t map_height,
+    const SatelliteView& map,
+    size_t max_steps, size_t num_shells,
+    Player& player1, Player& player2,
+    TankAlgorithmFactory player1_tank_algo_factory,
+    TankAlgorithmFactory player2_tank_algo_factory) {
+
+    width = map_width;
+    height = map_height;
+    this->max_steps = max_steps;
+    this->num_shells = num_shells;
+    this->player1 = &player1;
+    this->player2 = &player2;
+
+    // initializing board size
+    board = std::vector<std::vector<std::vector<GameObject*>>>(
+    width, std::vector<std::vector<GameObject*>>(height));
+
+    if(verbose){ // initializing the output file name
+        output_file_name = "output_" + generateTimeBasedString() + ".txt"; // TODO
+    }
+
+    initializeGameBoard(map, player1_tank_algo_factory, player2_tank_algo_factory);
+
+    // Checking the starting winning conditions
+    checkStartingWinningCondition();
+    if(should_exit){
+        resetState();
+        return std::move(game_result);
+    }
+    
+    // Initializing step_output_messages
+    output_messages.resize(number_of_total_tanks);
+
+    debug_runGame();
+    
+    resetState();
+    return std::move(game_result);
+}
+
+
+void GameManager::runGame(){
+    int sudden_death = 40;
+    int sudden_death_counter = 0;
+    bool sudden_death_flag = false;
+    size_t step_counter = 1;
+    if(verbose){
+        std::ofstream file(output_file_name); // Opens and overwrites if exists
+        file.close(); // Done — file is now created or cleared
+    }
+    while(sudden_death_counter != sudden_death && step_counter <= max_steps){
+        step();
+        if (sudden_death_flag){
+            sudden_death_counter++;
+        }
+        if(checkResult()){
+            // The game ended
+            setGameResult(0, step_counter);
+            return;
+        }
+        if(!sudden_death_flag){
+            sudden_death_flag = checkSuddenDeath();
+        }
+        step_counter++;
+    }
+    if (step_counter > max_steps){
+        // Reached max step
+        setGameResult(1, max_steps);
+        if(verbose){
+            writeToOutputFile("Tie, reached max steps = " + std::to_string(max_steps) + ", player 1 has " +
+            std::to_string(living_tanks_player1) + " tanks, player 2 has " + std::to_string(living_tanks_player2) + " tanks");
+        }
+    }
+    else{
+        // All tanks are out of shells
+        step_counter--; // becasue we added an extra step at the end
+        setGameResult(2, step_counter);
+        if(verbose){
+            writeToOutputFile("Tie, both players have zero shells for " + std::to_string(sudden_death) + " steps");
+        }
+    }
 }
 
 
 void GameManager::step(){
-initializeOutputMessages();
-// Foreach tank, we ask the corresponsing TankAlgorithm for an action
-for(const std::unique_ptr<Tank>& tank : tanks){
-    tank->setActionToPerform(tank->getTankAlgorithm()->getAction());
-    // --------------------- REMEMBER TO DETELE HERE ----------------------------------
-    output_messages[tank->getSerial()] = stringAction(tank->getActionToPerform());
-}
+    initializeOutputMessages();
+    // Foreach tank, we ask the corresponsing TankAlgorithm for an action
+    for(const std::unique_ptr<Tank>& tank : tanks){
+        tank->setActionToPerform(tank->getTankAlgorithm()->getAction());
+        // --------------------- REMEMBER TO DETELE HERE ----------------------------------
+        output_messages[tank->getSerial()] = stringAction(tank->getActionToPerform());
+    }
 
-// We now check each Tank action if it is a legal action
-checkActionLegality();
+    // We now check each Tank action if it is a legal action
+    checkActionLegality();
 
-// Preparing SatelliteView
-MySatelliteView satellite(width, height);
-setSatelliteView(satellite);
+    // Preparing SatelliteView
+    MySatelliteView satellite(width, height);
+    setSatelliteView(&satellite);
 
-// ======= First half-step ========
-// First we account for shells "mid-way" collisions
-deleteCollidingObjects(true);
+    // ======= First half-step ========
+    // First we account for shells "mid-way" collisions
+    deleteCollidingObjects(true);
 
-// Move all shells, and then check for board collisions on the same square
-moveAllShells();
-boardChecks();
+    // Move all shells, and then check for board collisions on the same square
+    moveAllShells();
+    boardChecks();
 
-// ======= Second half-step ========
-// We account for shells and tanks "mid-way" collisions
-deleteCollidingObjects(false);
+    // ======= Second half-step ========
+    // We account for shells and tanks "mid-way" collisions
+    deleteCollidingObjects(false);
 
-// Perform all tanks actions, and move all shells. Then check for board collisions on the same square
-moveAllShells();
-performTanksAction(satellite);
-boardChecks();
+    // Perform all tanks actions, and move all shells. Then check for board collisions on the same square
+    moveAllShells();
+    performTanksAction(satellite);
+    boardChecks();
 
-// updates to do at the end of each step
-updateBackwardCount();
-updateShootCooldown();
-resetBadAction();
-writeStepActions();
+    // updates to do at the end of each step
+    updateBackwardCount();
+    updateShootCooldown();
+    resetBadAction();
+    if (verbose){
+        writeStepActions();
+    }
 }
 
 // ------------------------------------------------ Utilis ----------------------------------------------------
@@ -398,29 +368,29 @@ void GameManager::deleteCollidingObjects(bool only_shells){
 }
 
 
-void GameManager::setSatelliteView(MySatelliteView& satellite) const{
-    for (int i = 0; i < width; i++){
-        for (int j = 0; j < height; j++){
-            if (board[i][j].empty()){
-                satellite.setObjectAt(i, j, ' ');
+void GameManager::setSatelliteView(MySatelliteView* satellite) const{
+    for (size_t x = 0; x < width; x++){
+        for (size_t y = 0; y < height; y++){
+            if (board[x][y].empty()){
+                satellite->setObjectAt(x, y, ' ');
                 continue;
             }
-            GameObject* obj = board[i][j].back();
+            GameObject* obj = board[x][y].back();
             if(dynamic_cast<Shell*>(obj)){
-                satellite.setObjectAt(i, j, '*');
+                satellite->setObjectAt(x, y, '*');
             }
             else if(dynamic_cast<Mine*>(obj)){
-                satellite.setObjectAt(i, j, '@');
+                satellite->setObjectAt(x, y, '@');
             }
             else if(dynamic_cast<Wall*>(obj)){
-                satellite.setObjectAt(i, j, '#');
+                satellite->setObjectAt(x, y, '#');
             }
             else if(Tank* t = dynamic_cast<Tank*>(obj)){
                 if (t->getplayer() == 1){
-                    satellite.setObjectAt(i, j, '1');
+                    satellite->setObjectAt(x, y, '1');
                 }
                 else if (t->getplayer() == 2){
-                    satellite.setObjectAt(i, j, '2');
+                    satellite->setObjectAt(x, y, '2');
                 }
             }
         }
@@ -560,7 +530,7 @@ void GameManager::clearBoardCollision(std::vector<GameObject*>& colided_objects)
 }
 
 
-void GameManager::emptyCell(int x, int y){
+void GameManager::emptyCell(size_t x, size_t y){
     // Make a copy so we can modify the original during iteration
     std::vector<GameObject*> toDelete = board[x][y];
     for (GameObject* obj : toDelete){
@@ -569,7 +539,7 @@ void GameManager::emptyCell(int x, int y){
     board[x][y].clear();
 }
 
-void GameManager::boardChecksHelper(int& i, int& j, int& num_of_tanks, int& num_of_shells, int& num_of_walls, int& num_of_mines){
+void GameManager::boardChecksHelper(size_t& i, size_t& j, int& num_of_tanks, int& num_of_shells, int& num_of_walls, int& num_of_mines){
     if (num_of_walls == 1){
         // if there is a wall in the cell
         if (num_of_shells >= 2){
@@ -606,8 +576,8 @@ void GameManager::boardChecksHelper(int& i, int& j, int& num_of_tanks, int& num_
 
 void GameManager::boardChecks(){
     // Foreach cell in the board
-    for (int i = 0; i < width; i++){
-        for (int j = 0; j < height; j++){
+    for (size_t i = 0; i < width; i++){
+        for (size_t j = 0; j < height; j++){
             int num_of_tanks = 0;
             int num_of_shells = 0;
             int num_of_walls = 0;
@@ -695,11 +665,11 @@ void GameManager::performGetBattleInfo(Tank* tank, MySatelliteView& satellite){
     satellite.setObjectAt(x, y, '%');
     if (tank->getplayer() == 1){
         // The tank is of player 1
-        players[0]->updateTankWithBattleInfo(*tank->getTankAlgorithm(), satellite);
+        player1->updateTankWithBattleInfo(*tank->getTankAlgorithm(), satellite);
     }
     else{
         // The tank is of player 2
-        players[1]->updateTankWithBattleInfo(*tank->getTankAlgorithm(), satellite);
+        player2->updateTankWithBattleInfo(*tank->getTankAlgorithm(), satellite);
     }
     satellite.setObjectAt(x, y, saved_char);
 }
@@ -781,18 +751,58 @@ bool GameManager::checkSuddenDeath() const{
 
 bool GameManager::checkResult() const{
     if ((living_tanks_player1 == 0) && (living_tanks_player2 == 0)){
-        writeToOutputFile("Tie, both players have zero tanks");
+        if (verbose){
+            writeToOutputFile("Tie, both players have zero tanks");
+        }
         return true;
     }
     else if ((living_tanks_player1 == 0) && (living_tanks_player2 != 0)){
-        writeToOutputFile("Player 2 won with " + std::to_string(living_tanks_player2) + " tanks still alive");
+        if (verbose){
+            writeToOutputFile("Player 2 won with " + std::to_string(living_tanks_player2) + " tanks still alive");
+        }
         return true;
     }
     else if ((living_tanks_player1 != 0) && (living_tanks_player2 == 0)){
-        writeToOutputFile("Player 1 won with " + std::to_string(living_tanks_player1) + " tanks still alive");
+        if (verbose){
+            writeToOutputFile("Player 1 won with " + std::to_string(living_tanks_player1) + " tanks still alive");
+        }
         return true;
     }
     return false;
+}
+
+void GameManager::setGameResult(int reason, int round_num){
+    // reason 0 - ALL_TANKS_DEAD
+    // reason 1 - MAX_STEPS
+    // reason 2 - ZERO_SHELLS
+    game_result.remaining_tanks = {living_tanks_player1, living_tanks_player2};
+    game_result.rounds = round_num;
+    std::unique_ptr<MySatelliteView> game_state = std::make_unique<MySatelliteView>(width, height);
+    setSatelliteView(game_state.get());
+    game_result.gameState = std::move(game_state);
+    if (reason == 0){
+        game_result.reason = GameResult::ALL_TANKS_DEAD;
+        if ((living_tanks_player1 == 0) && (living_tanks_player2 == 0)){
+            game_result.winner = 0;
+        }
+        if ((living_tanks_player1 != 0) && (living_tanks_player2 == 0)){
+            game_result.winner = 1;
+        }
+        if ((living_tanks_player1 == 0) && (living_tanks_player2 != 0)){
+            game_result.winner = 2;
+        }
+    }
+    else if(reason == 1){
+        game_result.reason = GameResult::MAX_STEPS;
+        game_result.winner = 0;
+    }
+    else if(reason == 2){
+        game_result.reason = GameResult::ZERO_SHELLS;
+        game_result.winner = 0;
+    }
+    else{
+        std::cout << "Invalid 'reason' argument for the function 'setGameResult' - " << reason << std::endl;
+    }
 }
 
 // --------------------- Function utilities that help write content to the output file ----------------------------
