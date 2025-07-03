@@ -227,12 +227,13 @@ void GameManager::debug_runGame(){
 
 // -------------------------------------------- run and step functions ------------------------------------------------
 GameResult GameManager::run(
-    size_t map_width, size_t map_height,
-    const SatelliteView& map,
-    size_t max_steps, size_t num_shells,
-    Player& player1, Player& player2,
-    TankAlgorithmFactory player1_tank_algo_factory,
-    TankAlgorithmFactory player2_tank_algo_factory) {
+        size_t map_width, size_t map_height,
+	    const SatelliteView& map, // <= a snapshot, NOT updated
+        string map_name,
+        size_t max_steps, size_t num_shells,
+        Player& player1, string name1, Player& player2, string name2, 
+        TankAlgorithmFactory player1_tank_algo_factory,
+        TankAlgorithmFactory player2_tank_algo_factory) {
 
     width = map_width;
     height = map_height;
@@ -246,7 +247,7 @@ GameResult GameManager::run(
     width, std::vector<std::vector<GameObject*>>(height));
 
     if(verbose){ // initializing the output file name
-        output_file_name = "output_" + generateTimeBasedString() + ".txt"; // TODO
+        output_file_name = "output_" + map_name + "_" + name1 + "_" + name2 + "_" + generateTimeBasedString() + ".txt"; // TODO
     }
 
     initializeGameBoard(map, player1_tank_algo_factory, player2_tank_algo_factory);

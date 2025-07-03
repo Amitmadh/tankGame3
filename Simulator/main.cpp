@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
     // ============= Getting both registrars ================
     auto& game_manager_registrar = GameManagerRegistrar::getGameManagerRegistrar();
     auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
-    std::string so_path_game_manager = "GameManager/GameManager_322996059_211779582.so";
-    std::string so_path_algorithm = "Algorithm/Algorithm_322996059_211779582.so";
+    std::string so_path_game_manager = "group_so/ours/Algorithm_322996059_211779582.so";
+    std::string so_path_algorithm = "group_so/ours/GameManager_322996059_211779582.so";
 
     // ============= Creating entries in registrars ================
     game_manager_registrar.createGameManagerFactoryEntry(so_path_game_manager);
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
         TankAlgorithmFactory player1_tank_algo_factory = algorithm_registrar_entry.getTankAlgorithmFactory();
         TankAlgorithmFactory player2_tank_algo_factory = algorithm_registrar_entry.getTankAlgorithmFactory();
 
-        GameResult result = game_manager->run(board_info.map_width, board_info.map_height, board_info.map, board_info.max_steps, board_info.num_shells, *player1.get(), *player2.get(), player1_tank_algo_factory, player2_tank_algo_factory);
+        GameResult result = game_manager->run(board_info.map_width, board_info.map_height, board_info.map, "MazeOurs",board_info.max_steps, board_info.num_shells, *player1.get(), "name1",*player2.get(), "name2", player1_tank_algo_factory, player2_tank_algo_factory);
         std::cout << stringGameResult(result, board_info.map_width, board_info.map_height);
     }
     catch (GameManagerRegistrar::BadRegistrationException& e) {
