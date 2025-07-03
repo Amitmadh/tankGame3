@@ -31,6 +31,9 @@ class AlgorithmRegistrar {
         std::unique_ptr<TankAlgorithm> createTankAlgorithm(int player_index, int tank_index) const {
             return tankAlgorithmFactory(player_index, tank_index);
         }
+        TankAlgorithmFactory getTankAlgorithmFactory() { // Addition to the provided Skeleton
+            return tankAlgorithmFactory;
+        }
         bool hasPlayerFactory() const {
             return playerFactory != nullptr;
         }
@@ -69,6 +72,9 @@ public:
     }
     void removeLast() {
         algorithms.pop_back();
+    }
+    AlgorithmAndPlayerFactories& getLast() { // Addition to the provided Skeleton
+        return algorithms.back();
     }
     auto begin() const {
         return algorithms.begin();

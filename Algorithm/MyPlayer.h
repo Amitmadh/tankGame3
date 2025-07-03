@@ -2,6 +2,8 @@
 #include "../common/Player.h"
 #include <utility>
 
+namespace Algorithm_322996059_211779582 {
+
 class MyPlayer : public Player {
 protected:
     int player_index;
@@ -16,3 +18,5 @@ protected:
 public:
     MyPlayer(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells);
 };
+
+}

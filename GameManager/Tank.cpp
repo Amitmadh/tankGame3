@@ -1,6 +1,6 @@
 #include "Tank.h"
 
-class GameObject; // Forward declaration of GameObject class
+namespace GameManager_322996059_211779582 {
 
 Tank::Tank(int x, int y, Direction direction, int serial, int player, int tank_index, int shell_num, std::unique_ptr<TankAlgorithm> tank_algorithm):
         GameObject(x, y), direction(direction), serial(serial), player(player), tank_index(tank_index), shell_num(shell_num), tank_algorithm(std::move(tank_algorithm)) {}
@@ -94,4 +94,6 @@ void Tank::decrementShellNum(){
 }
 void Tank::incrementBackwardCount(){
     backward_count += 1;
+}
+
 }

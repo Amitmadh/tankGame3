@@ -1,5 +1,7 @@
 #include "MyBattleInfo2.h"
 
+namespace Algorithm_322996059_211779582 {
+
 MyBattleInfo2::MyBattleInfo2(std::vector<std::vector<char>> game_board, int steps, std::vector<Shell> shells_object) : shells_object(shells_object) {
     board = game_board;
     max_steps = steps;
@@ -36,3 +38,4 @@ void MyBattleInfo2::setShellObject(const std::vector<Shell> shells) {
     shells_object = shells;
 }
 
+}

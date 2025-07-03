@@ -1,5 +1,7 @@
 #include "MyBattleInfo.h"
 
+namespace Algorithm_322996059_211779582 {
+
 //getters
 std::vector<std::vector<char>> MyBattleInfo::getBoard() const{
     return board;
@@ -44,4 +46,6 @@ void MyBattleInfo::setNumOfShells(const int num) {
 
 void MyBattleInfo::setMaxSteps(const int max) {
     max_steps = max;
+}
+
 }

@@ -5,6 +5,7 @@
 #include "../common/AbstractGameManager.h"
 #include "../common/GameResult.h"
 #include "../common/ActionRequest.h"
+#include "../common/GameManagerRegistration.h"
 #include "../UserCommon/GameObject.h"
 #include "../UserCommon/Shell.h"
 #include "../UserCommon/GameUtilis.h"
@@ -21,6 +22,8 @@
 #include <filesystem>
 #include <sstream>
 #include <regex>
+
+namespace GameManager_322996059_211779582 {
 
 class GameManager : public AbstractGameManager {
 private:
@@ -150,3 +153,6 @@ private:
     void initializeGameBoard(const SatelliteView& map, TankAlgorithmFactory& player1_tank_algo_factory, TankAlgorithmFactory& player2_tank_algo_factory);
     void resetState();
 };
+
+
+}

@@ -1,6 +1,8 @@
 #include "MyTankAlgorithm.h"
 
 
+namespace Algorithm_322996059_211779582 {
+
 MyTankAlgorithm::MyTankAlgorithm(int player_index, int tank_index) : tank_index(tank_index){
     if (player_index == 1) {
         tank_direction = Direction::L;
@@ -181,3 +183,4 @@ bool MyTankAlgorithm::isDirectionAvailible(Direction rotaion_direction) const {
 }
 
 
+}

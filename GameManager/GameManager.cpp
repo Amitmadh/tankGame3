@@ -1,5 +1,10 @@
 #include "GameManager.h"
 
+using namespace GameManager_322996059_211779582;
+REGISTER_GAME_MANAGER(GameManager)
+
+namespace GameManager_322996059_211779582 {
+
 GameManager::GameManager(bool verbose) : verbose(verbose) {}
 
 
@@ -841,4 +846,7 @@ void GameManager::writeStepActions() const{
     }
     writeToOutputFile(result);
     return;
+}
+
+
 }

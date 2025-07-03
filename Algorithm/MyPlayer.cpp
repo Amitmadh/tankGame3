@@ -1,5 +1,7 @@
 #include "MyPlayer.h"
 
+namespace Algorithm_322996059_211779582 {
+
 MyPlayer::MyPlayer(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells) :
     player_index(player_index), width(x), height(y), max_steps(max_steps), num_shells(num_shells) {
 }
@@ -12,4 +14,6 @@ std::vector<std::vector<char>> MyPlayer::getBoard(SatelliteView& satellite_view)
         }
     }
     return board;
+}
+
 }

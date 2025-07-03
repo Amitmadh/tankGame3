@@ -3,6 +3,8 @@
 #include "../common/BattleInfo.h"
 #include <vector>
 
+namespace Algorithm_322996059_211779582 {
+
 class MyBattleInfo : public BattleInfo {
 protected:
     std::vector<std::vector<char>> board;
@@ -31,3 +33,5 @@ public:
     void setNumOfShells(const int num);
     void setMaxSteps(const int max);
 };
+
+}

@@ -2,6 +2,8 @@
 #include "MyTankAlgorithm.h"
 #include "MyBattleInfo1.h"
 
+namespace Algorithm_322996059_211779582 {
+
 class TankAlgorithm1 : public MyTankAlgorithm {
     int turn_number = -1;
     MyBattleInfo1 battle_info;
@@ -17,3 +19,5 @@ private:
     Direction enemyTankDirection(std::pair<int, int> enemy_tank) const; // rotate the tank towards the enemy tank
     ActionRequest changeDirection(Direction dest);
 };
+
+}

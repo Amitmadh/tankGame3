@@ -3,6 +3,9 @@
 #include "MyBattleInfo2.h"
 #include "MyPlayer.h"
 #include "../UserCommon/Shell.h"
+#include "../common/PlayerRegistration.h"
+
+namespace Algorithm_322996059_211779582 {
 
 class Player2 : public MyPlayer {
     std::vector<std::vector<char>> board;
@@ -16,3 +19,5 @@ class Player2 : public MyPlayer {
         
         void updateTankWithBattleInfo(TankAlgorithm& tank, SatelliteView& satellite_view) override;
 };
+
+}

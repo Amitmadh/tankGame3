@@ -1,5 +1,10 @@
 #include "Player2.h"
 
+using namespace Algorithm_322996059_211779582;
+REGISTER_PLAYER(Player2);
+
+namespace Algorithm_322996059_211779582 {
+
 Player2::Player2(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells) :
     MyPlayer(player_index, x, y, max_steps, num_shells){}
 
@@ -45,4 +50,7 @@ void Player2::updateShells(std::vector<std::vector<char>> old_board, std::vector
             Direction dir = getShellDirection(old_board, shell);
             shells.push_back(Shell(shell.first, shell.second, dir));
         }
+}
+
+
 }

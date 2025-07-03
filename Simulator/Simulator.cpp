@@ -2,24 +2,24 @@
 
 // ============================ READING BOARD FUNCTIONS =================================
 
-bool Simulator::readBoard(char* input_file, MySatelliteView& map, size_t& map_width, size_t& map_height, size_t& max_steps, size_t& num_shells){
+bool Simulator::readBoard(char* input_file, BoardInfo& board_info){
     std::ifstream file(input_file);
     if (!file) {
         std::cout << "Error: Cannot open file " << input_file << std::endl;
         return false;
     }
     // Reading first 5 lines of the instructions
-    if(!readFirstFiveLines(file, map_width, map_height, max_steps, num_shells)){
+    if(!readFirstFiveLines(file, board_info)){
         return false;
     }
-    map.initialize(map_width, map_height);
+    board_info.map.initialize(board_info.map_width, board_info.map_height);
     // READING BOARD 
-    readBoardLines(file, map, map_width, map_height);
+    readBoardLines(file, board_info);
     file.close();
     return true;
 }
 
-bool Simulator::readFirstFiveLines(std::ifstream& file, size_t& map_width, size_t& map_height, size_t& max_steps, size_t& num_shells){
+bool Simulator::readFirstFiveLines(std::ifstream& file, BoardInfo& board_info){
     std::string line;
     // Line 1: Description (ignored)
     if (!std::getline(file, line)) {
@@ -30,19 +30,19 @@ bool Simulator::readFirstFiveLines(std::ifstream& file, size_t& map_width, size_
     try {
         // Line 2: MaxSteps
         if (!std::getline(file, line)) throw std::runtime_error("Missing MaxSteps line");
-        max_steps = parseLine(line, "MaxSteps");
+        board_info.max_steps = parseLine(line, "MaxSteps");
 
         // Line 3: NumShells
         if (!std::getline(file, line)) throw std::runtime_error("Missing NumShells line");
-        num_shells = parseLine(line, "NumShells");
+        board_info.num_shells = parseLine(line, "NumShells");
 
         // Line 4: Rows
         if (!std::getline(file, line)) throw std::runtime_error("Missing Rows line");
-        map_height = parseLine(line, "Rows");
+        board_info.map_height = parseLine(line, "Rows");
         
         // Line 5: Cols
         if (!std::getline(file, line)) throw std::runtime_error("Missing Cols line");
-        map_width = parseLine(line, "Cols");
+        board_info.map_width = parseLine(line, "Cols");
     }
     catch (const std::runtime_error& e) {
         std::cout << e.what() << std::endl;
@@ -52,21 +52,21 @@ bool Simulator::readFirstFiveLines(std::ifstream& file, size_t& map_width, size_
     return true;
 }
 
-void Simulator::readBoardLines(std::ifstream& file, MySatelliteView& map, size_t map_width, size_t map_height){
+void Simulator::readBoardLines(std::ifstream& file, BoardInfo& board_info){
     char ch, dummy;
     bool underflow = false;
     bool overflow = false;
-    for (size_t y = 0; y < map_height; y++){
-        for (size_t x = 0; x < map_width + 1; x++){
+    for (size_t y = 0; y < board_info.map_height; y++){
+        for (size_t x = 0; x < board_info.map_width + 1; x++){
             file.get(ch); // puts a char in ch
-            if ((ch == '\n' && x == map_width) || (file.eof() && x == map_width && y == map_height - 1)){
+            if ((ch == '\n' && x == board_info.map_width) || (file.eof() && x == board_info.map_width && y == board_info.map_height - 1)){
                 break;
             }
-            else if ((ch == '\n' || file.eof()) && x < map_width){
+            else if ((ch == '\n' || file.eof()) && x < board_info.map_width){
                 underflow = true;
                 break;
             }
-            else if (ch != '\n' && x == map_width){
+            else if (ch != '\n' && x == board_info.map_width){
                 overflow = true;
                 while (file.get(ch)) { // Skipping the rest of the line
                     if (ch == '\n'){
@@ -75,16 +75,16 @@ void Simulator::readBoardLines(std::ifstream& file, MySatelliteView& map, size_t
                 }
             }
             else if (ch == '#'){
-                map.setObjectAt(x, y, '#');
+                board_info.map.setObjectAt(x, y, '#');
             }
             else if (ch == '1') {
-                map.setObjectAt(x, y, '1');
+                board_info.map.setObjectAt(x, y, '1');
             }
             else if (ch == '2') {
-                map.setObjectAt(x, y, '2');
+                board_info.map.setObjectAt(x, y, '2');
             }
             else if (ch == '@'){
-                map.setObjectAt(x, y, '@');
+                board_info.map.setObjectAt(x, y, '@');
             }
         }
     }

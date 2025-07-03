@@ -2,6 +2,8 @@
 
 #include "../UserCommon/GameObject.h"
 
+namespace GameManager_322996059_211779582 {
+
 class Wall: public GameObject {
     bool weak = false;
 public:
@@ -11,3 +13,5 @@ public:
     void becomeWeak();
     bool isWeak() const;
 };
+
+}

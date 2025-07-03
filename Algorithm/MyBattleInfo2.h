@@ -4,6 +4,8 @@
 #include "MyBattleInfo.h"
 #include <vector>
 
+namespace Algorithm_322996059_211779582 {
+
 class MyBattleInfo2 : public MyBattleInfo {
     std::vector<Shell> shells_object;
 
@@ -14,3 +16,5 @@ public:
     std::vector<Shell> getShellsObject() const;  
     void setShellObject(const std::vector<Shell> shells);
 };
+
+}

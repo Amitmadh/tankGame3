@@ -1,5 +1,7 @@
 #include "MyBattleInfo1.h"
 
+namespace Algorithm_322996059_211779582 {
+
 MyBattleInfo1::MyBattleInfo1(const std::vector<std::vector<char>> game_board, int steps) {
     board = game_board;
     max_steps = steps;
@@ -25,4 +27,6 @@ MyBattleInfo1::MyBattleInfo1(const std::vector<std::vector<char>> game_board, in
 
 MyBattleInfo1::MyBattleInfo1() {
     board = std::vector<std::vector<char>>(1, std::vector<char>(1, '1'));
+}
+
 }

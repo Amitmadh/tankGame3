@@ -7,6 +7,8 @@
 #include <string>
 #include <memory>
 
+namespace GameManager_322996059_211779582 {
+
 
 class Tank: public GameObject {
     Direction direction;
@@ -54,3 +56,5 @@ public:
     // For debug purposes
     void debug_print();
 };
+
+}

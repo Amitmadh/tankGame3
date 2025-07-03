@@ -1,5 +1,10 @@
 #include "TankAlgorithm2.h"
 
+using namespace Algorithm_322996059_211779582;
+REGISTER_TANK_ALGORITHM(TankAlgorithm2);
+
+namespace Algorithm_322996059_211779582 {
+
 TankAlgorithm2::TankAlgorithm2(int player_index, int tank_index) : MyTankAlgorithm(player_index, tank_index) {}
 
 void TankAlgorithm2::updateBattleInfo(BattleInfo& info) {
@@ -173,4 +178,6 @@ ActionRequest TankAlgorithm2::escapeShell(){
     else if (isDirectionAvailible(Direction::L)) return rotateTankQuarterLeft();
     else if (isDirectionAvailible(Direction::D)) return rotateTankEighthLeft();
     else return rotateTankEighthLeft(); //default
+}
+
 }

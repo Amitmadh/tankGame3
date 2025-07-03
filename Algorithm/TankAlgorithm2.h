@@ -2,7 +2,10 @@
 
 #include "MyTankAlgorithm.h"
 #include "MyBattleInfo2.h"
+#include "../common/TankAlgorithmRegistration.h"
 #include <string>
+
+namespace Algorithm_322996059_211779582 {
 
 class TankAlgorithm2 : public MyTankAlgorithm {
     MyBattleInfo2 battle_info;
@@ -24,3 +27,5 @@ private:
     ActionRequest findDirectionTowardsEnemy(); // find the direction to the enemy tank using bfs
     ActionRequest changeDirection(Direction dest); // change the direction of the tank
 };
+
+}

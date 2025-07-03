@@ -1,5 +1,7 @@
 #include "TankAlgorithm1.h"
 
+namespace Algorithm_322996059_211779582 {
+
 TankAlgorithm1::TankAlgorithm1(int player_index, int tank_index) : MyTankAlgorithm(player_index, tank_index) {}
 
 void TankAlgorithm1::updateBattleInfo(BattleInfo& info) {
@@ -111,3 +113,4 @@ ActionRequest TankAlgorithm1::changeDirection(Direction dest) {
     }
 }
 
+}

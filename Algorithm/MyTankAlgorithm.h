@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 
+namespace Algorithm_322996059_211779582 {
 
 class MyTankAlgorithm : public TankAlgorithm{
     public:
@@ -51,3 +52,5 @@ class MyTankAlgorithm : public TankAlgorithm{
 
         bool isTankInfront(MyBattleInfo battle_Info) const;
 };
+
+}
