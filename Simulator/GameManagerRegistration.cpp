@@ -1,4 +1,3 @@
-#include "../common/GameManagerRegistration.h"
 #include "GameManagerRegistrar.h"
 
 GameManagerRegistration::GameManagerRegistration(GameManagerFactory factory) {

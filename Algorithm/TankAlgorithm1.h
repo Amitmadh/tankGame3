@@ -1,6 +1,7 @@
 #pragma once
 #include "MyTankAlgorithm.h"
 #include "MyBattleInfo1.h"
+#include "../common/TankAlgorithmRegistration.h"
 
 namespace Algorithm_322996059_211779582 {
 

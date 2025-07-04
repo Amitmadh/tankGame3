@@ -28,3 +28,4 @@ std::string stringAction(ActionRequest action);
 std::string directionArrowString(Direction direction);
 std::string generateTimeBasedString(); // generating a string based on the time
 std::string stringGameResult(GameResult& game_result, size_t map_width, size_t map_height);
+std::string extractBaseName(const std::string& path);

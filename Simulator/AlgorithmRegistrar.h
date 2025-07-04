@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -5,6 +7,8 @@
 #include <memory>
 #include <cassert>
 #include "../common/TankAlgorithm.h"
+#include "../common/PlayerRegistration.h"
+#include "../common/TankAlgorithmRegistration.h"
 #include "../common/Player.h"
 
 
@@ -73,8 +77,8 @@ public:
     void removeLast() {
         algorithms.pop_back();
     }
-    AlgorithmAndPlayerFactories& getLast() { // Addition to the provided Skeleton
-        return algorithms.back();
+    AlgorithmAndPlayerFactories at(int i) { // Addition to the provided Skeleton - DO NOT USE OUTSIDE DEBUGING
+        return algorithms.at(i);
     }
     auto begin() const {
         return algorithms.begin();

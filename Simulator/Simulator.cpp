@@ -108,3 +108,69 @@ int Simulator::parseLine(const std::string& line, const std::string& key) const{
 }
 
 // =====================================================================================
+
+// ============================ Debug 1v1 Testing =========================================
+
+bool Simulator::debugBattle(char* map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2){
+
+    // ============= Reading Board ================
+    BoardInfo board_info;
+    readBoard(map_file, board_info);
+
+    // ============= Getting both registrars ================
+    auto& game_manager_registrar = GameManagerRegistrar::getGameManagerRegistrar();
+    auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
+
+    // ============= Creating entries in registrars and Looading .so files ================
+    // Game Manager
+    game_manager_registrar.createGameManagerFactoryEntry(so_path_game_manager);
+    void* handle_game_manager = dlopen(so_path_game_manager.c_str(), RTLD_LAZY);
+    if (!handle_game_manager) {
+        std::cerr << "Error loading " << so_path_game_manager << ": " << dlerror() << std::endl;
+        return false;
+    }
+    game_manager_registrar.validateLastRegistration();
+
+    // Algoeithm1
+    algorithm_registrar.createAlgorithmFactoryEntry(so_path_algorithm1);
+    void* handle_algorithm1 = dlopen(so_path_algorithm1.c_str(), RTLD_LAZY);
+    if (!handle_algorithm1) {
+        std::cerr << "Error loading " << so_path_algorithm1 << ": " << dlerror() << std::endl;
+        return false;
+    }
+    algorithm_registrar.validateLastRegistration();
+
+
+    // Algoeithm2
+    algorithm_registrar.createAlgorithmFactoryEntry(so_path_algorithm2);
+    void* handle_algorithm2 = dlopen(so_path_algorithm2.c_str(), RTLD_LAZY);
+    if (!handle_algorithm2) {
+        std::cerr << "Error loading " << so_path_algorithm2 << ": " << dlerror() << std::endl;
+        return false;
+    }
+    algorithm_registrar.validateLastRegistration();
+
+    {
+        // ============= Running game ================
+        auto game_manager_registrar_entry = game_manager_registrar.at(0);
+        auto algorithm1_registrar_entry = algorithm_registrar.at(0);
+        auto algorithm2_registrar_entry = algorithm_registrar.at(1);
+        std::unique_ptr<AbstractGameManager> game_manager = game_manager_registrar_entry.createGameManager(true);
+        std::unique_ptr<Player> player1 = algorithm1_registrar_entry.createPlayer(1,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
+        std::unique_ptr<Player> player2 = algorithm2_registrar_entry.createPlayer(2,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
+        TankAlgorithmFactory player1_tank_algo_factory = algorithm1_registrar_entry.getTankAlgorithmFactory();
+        TankAlgorithmFactory player2_tank_algo_factory = algorithm2_registrar_entry.getTankAlgorithmFactory();
+        std::string map_name = extractBaseName(std::string(map_file));
+        std::string name1 = extractBaseName(so_path_algorithm1);
+        std::string name2 = extractBaseName(so_path_algorithm2);
+        GameResult result = game_manager->run(board_info.map_width, board_info.map_height, board_info.map, map_name ,board_info.max_steps, board_info.num_shells, *player1.get(), name1 ,*player2.get(), name2 , player1_tank_algo_factory, player2_tank_algo_factory);
+        std::cout << stringGameResult(result, board_info.map_width, board_info.map_height);
+    }
+    // ============= Clearing registrars and unloading ================
+    game_manager_registrar.clear();
+    algorithm_registrar.clear();
+    dlclose(handle_game_manager);
+    dlclose(handle_algorithm1);
+    dlclose(handle_algorithm2);
+    return true;
+}

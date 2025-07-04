@@ -341,3 +341,17 @@ std::string generateTimeBasedString() {
 
     return oss.str();
 }
+
+
+std::string extractBaseName(const std::string& path) {
+    // Find last slash
+    size_t slash_pos = path.find_last_of("/\\");
+    size_t start = (slash_pos == std::string::npos) ? 0 : slash_pos + 1;
+
+    // Find last dot
+    size_t dot_pos = path.find_last_of('.');
+    size_t end = (dot_pos == std::string::npos || dot_pos < start) ? path.size() : dot_pos;
+
+    // Return substring between them
+    return path.substr(start, end - start);
+}

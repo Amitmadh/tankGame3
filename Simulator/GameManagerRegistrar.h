@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -5,6 +7,7 @@
 #include <memory>
 #include <cassert>
 #include "../common/AbstractGameManager.h"
+#include "../common/GameManagerRegistration.h"
 
 
 
@@ -54,8 +57,8 @@ public:
     void removeLast() {
         gameManagers.pop_back();
     }
-    GameManagerFactoryPair& getLast() { // Addition to the provided Skeleton
-        return gameManagers.back();
+    GameManagerFactoryPair at(int i) { // Addition to the provided Skeleton - DO NOT USE OUTSIDE DEBUGING
+        return gameManagers.at(i);
     }
     auto begin() const {
         return gameManagers.begin();

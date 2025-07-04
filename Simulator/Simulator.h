@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../UserCommon/MySatelliteView.h"
 #include <memory>
 #include <iostream>
 #include <string>
@@ -9,6 +8,13 @@
 #include <vector>
 #include <functional>
 #include <fstream>
+#include <dlfcn.h>
+#include "../common/GameResult.h"
+#include "../UserCommon/GameUtilis.h"
+#include "../UserCommon/MySatelliteView.h"
+#include "GameManagerRegistrar.h"
+#include "AlgorithmRegistrar.h"
+
 
 
 struct BoardInfo {
@@ -25,6 +31,7 @@ class Simulator {
 public:
     // reading board function
     bool readBoard(char* input_file, BoardInfo& board_info); // return false if failed
+    bool debugBattle(char* map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2);
 
 private:
     // readBoard helper functions:

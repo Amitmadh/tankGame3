@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../common/PlayerRegistration.h"
 #include "MyBattleInfo1.h"
 #include "MyPlayer.h"
 #include <cstddef> // for size_t
