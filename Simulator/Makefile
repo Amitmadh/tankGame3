@@ -7,7 +7,7 @@ OUT_EXE = simulator_$(ID1)_$(ID2)
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -fPIC -I../common -I../UserCommon
+CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g -fPIC -I../common -I../UserCommon
 LDFLAGS = -rdynamic
 LDLIBS = -ldl  # Needed for dlopen
 

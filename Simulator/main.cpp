@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     }
     Simulator sim;
     std::string so_path_game_manager = "group_so/ours/GameManager_322996059_211779582.so";
-    std::string so_path_algorithm1 = "group_so/ours/Algorithm_322996059_211779582_1.so";
+    std::string so_path_algorithm1 = "group_so/group1/Algorithm_322213836_212054837.so";
     std::string so_path_algorithm2 = "group_so/ours/Algorithm_322996059_211779582_2.so";
     sim.debugBattle(argv[1], so_path_game_manager, so_path_algorithm1, so_path_algorithm2);
 }

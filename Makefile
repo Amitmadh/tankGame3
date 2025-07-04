@@ -1,32 +1,17 @@
-# Compiler and flags
-CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g
+.PHONY: all clean Algorithm GameManager Simulator
 
-# Target binary
-TARGET = tanks_game
+all: Algorithm GameManager Simulator
 
-# Directories
-OBJDIR = bin
-SRCDIRS = . Simulator Algorithm GameManager common UserCommon
+Algorithm:
+	$(MAKE) -C Algorithm
 
-# Source files
-SRCS := $(foreach dir, $(SRCDIRS), $(wildcard $(dir)/*.cpp))
+GameManager:
+	$(MAKE) -C GameManager
 
-# Object files (mirrored under bin/)
-OBJS := $(SRCS:%.cpp=$(OBJDIR)/%.o)
+Simulator:
+	$(MAKE) -C Simulator
 
-# Default target
-all: $(TARGET)
-
-# Link
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $@
-
-# Compile .cpp -> .o into mirrored bin/ directory
-$(OBJDIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Clean target
 clean:
-	rm -rf $(OBJDIR) $(TARGET)
+	$(MAKE) -C Algorithm clean
+	$(MAKE) -C GameManager clean
+	$(MAKE) -C Simulator clean

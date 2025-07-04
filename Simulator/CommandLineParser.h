@@ -50,5 +50,5 @@ private:
     void validateFiles();
     void validateFolders();
     void validateFile(const std::string& path);
-    void validateFolder(const std::string& path, const std::string& expectedExtension);
+    void validateFolder(const std::string& path);
 };

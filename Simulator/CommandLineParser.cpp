@@ -115,29 +115,31 @@ bool CommandLineParser::parse() {
 
 void CommandLineParser::printUsageWithErrors() const {
     if (!has_mode){
+        std::cout << "Missing Mode Argument." << std::endl;
         std::cout << "Usage: ./simulator_<submitter_ids> -comparative ... or -competition ... with required arguments." << std::endl;
         return;
     }
     if (!unsupported_argument_errors.empty()){
-        std::cout << "Unsupported arguments (or duplicate arguments):" << std::endl;
+        std::cout << "Unsupported Arguments (Including Duplicates):" << std::endl;
         for (const auto& arg : unsupported_argument_errors) {
             std::cout << arg << std::endl;
         }
     }
     if (!missing_argument_errors.empty()){
-        std::cout << "Missing arguments for " << "" << std::endl;
+        if (config.mode == Mode::Comparative) std::cout << "Missing Arguments for Comparative Mode:" << std::endl;
+        else std::cout << "Missing Arguments for Compatitive Mode:" << std::endl;
         for (const auto& arg : missing_argument_errors) {
             std::cout << arg << std::endl;
         }
     }
     if (!file_errors.empty()){
-        std::cout << "File arguments problems:" << std::endl;
+        std::cout << "File Arguments Problems:" << std::endl;
         for (const auto& err : file_errors) {
             std::cout << err << std::endl;
         }
     }
     if (!folder_errors.empty()){
-        std::cout << "File arguments problems:" << std::endl;
+        std::cout << "Folder Arguments Problems:" << std::endl;
         for (const auto& err : folder_errors) {
             std::cout << err << std::endl;
         }
@@ -167,10 +169,10 @@ void CommandLineParser::validateFiles() {
 
 void CommandLineParser::validateFolders() {
     if (config.mode == Mode::Comparative) {
-        validateFolder(config.gameManagersFolder, ".so");
+        validateFolder(config.gameManagersFolder);
     } else if (config.mode == Mode::Competitive) {
-        validateFolder(config.algorithmsFolder, ".so");
-        validateFolder(config.gameMapsFolder, ".txt");
+        validateFolder(config.algorithmsFolder);
+        validateFolder(config.gameMapsFolder);
     }
 }
 
@@ -185,7 +187,7 @@ void CommandLineParser::validateFile(const std::string& path) {
     }
 }
 
-void CommandLineParser::validateFolder(const std::string& path, const std::string& expectedExtension) {
+void CommandLineParser::validateFolder(const std::string& path) {
     if (!std::filesystem::exists(path)) {
         folder_errors.push_back(path + " doesn't exist");
         return;
@@ -194,17 +196,5 @@ void CommandLineParser::validateFolder(const std::string& path, const std::strin
     if (!std::filesystem::is_directory(path)) {
         folder_errors.push_back(path + " cannot be traversed");
         return;
-    }
-
-    bool has_expected_file = false;
-    for (const auto& entry : std::filesystem::directory_iterator(path)) {
-        if (entry.is_regular_file() && entry.path().extension() == expectedExtension) {
-            has_expected_file = true;
-            break;
-        }
-    }
-
-    if (!has_expected_file) {
-        folder_errors.push_back(path + " has zero files of the desired usage");
     }
 }
