@@ -24,8 +24,9 @@
 #include <regex>
 
 namespace GameManager_322996059_211779582 {
+using namespace UserCommon_322996059_211779582;
 
-class GameManager : public AbstractGameManager {
+class MyGameManager_322996059_211779582 : public AbstractGameManager {
 private:
     size_t width = 0;
     size_t height = 0;
@@ -52,7 +53,7 @@ private:
     GameResult game_result;
 
 public:
-    GameManager(bool verbose);
+    MyGameManager_322996059_211779582(bool verbose);
 
     // Runs the game
    GameResult run(

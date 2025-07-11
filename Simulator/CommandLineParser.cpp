@@ -115,41 +115,41 @@ bool CommandLineParser::parse() {
 
 void CommandLineParser::printUsageWithErrors() const {
     if (!has_mode){
-        std::cout << "Missing Mode Argument." << std::endl;
+        std::cout << "\nMissing Mode Argument." << std::endl;
         std::cout << "Usage: ./simulator_<submitter_ids> -comparative ... or -competition ... with required arguments." << std::endl;
         return;
     }
     if (!unsupported_argument_errors.empty()){
-        std::cout << "Unsupported Arguments (Including Duplicates):" << std::endl;
+        std::cout << "\nUnsupported Arguments (Including Duplicates):" << std::endl;
         for (const auto& arg : unsupported_argument_errors) {
             std::cout << arg << std::endl;
         }
     }
     if (!missing_argument_errors.empty()){
-        if (config.mode == Mode::Comparative) std::cout << "Missing Arguments for Comparative Mode:" << std::endl;
-        else std::cout << "Missing Arguments for Compatitive Mode:" << std::endl;
+        if (config.mode == Mode::Comparative) std::cout << "\nMissing Arguments for Comparative Mode:" << std::endl;
+        else std::cout << "\nMissing Arguments for Compatitive Mode:" << std::endl;
         for (const auto& arg : missing_argument_errors) {
             std::cout << arg << std::endl;
         }
     }
-    if (!file_errors.empty()){
-        std::cout << "File Arguments Problems:" << std::endl;
-        for (const auto& err : file_errors) {
-            std::cout << err << std::endl;
+    if (unsupported_argument_errors.empty() && missing_argument_errors.empty()){
+        if (!file_errors.empty()){
+            std::cout << "\nFile Arguments Problems:" << std::endl;
+            for (const auto& err : file_errors) {
+                std::cout << err << std::endl;
+            }
         }
-    }
-    if (!folder_errors.empty()){
-        std::cout << "Folder Arguments Problems:" << std::endl;
-        for (const auto& err : folder_errors) {
-            std::cout << err << std::endl;
+        if (!folder_errors.empty()){
+            std::cout << "\nFolder Arguments Problems:" << std::endl;
+            for (const auto& err : folder_errors) {
+                std::cout << err << std::endl;
+            }
         }
     }
     if (config.mode == Mode::Comparative){
-        std::cout << "\nUsage:\n"
-              << "  ./simulator_<ids> -comparative game_map=<file> game_managers_folder=<folder> algorithm1=<file> algorithm2=<file> [num_threads=<num>] [-verbose]\n";
+        std::cout << "\nUsage:\n" << "  ./simulator_<ids> -comparative game_map=<file> game_managers_folder=<folder> algorithm1=<file> algorithm2=<file> [num_threads=<num>] [-verbose]\n";
     } else {
-        std::cout << "\nUsage:\n"
-              << "  ./simulator_<ids> -competition game_maps_folder=<folder> game_manager=<file> algorithms_folder=<folder> [num_threads=<num>] [-verbose]\n";
+        std::cout << "\nUsage:\n" << "  ./simulator_<ids> -competition game_maps_folder=<folder> game_manager=<file> algorithms_folder=<folder> [num_threads=<num>] [-verbose]\n";
     }
 }
 

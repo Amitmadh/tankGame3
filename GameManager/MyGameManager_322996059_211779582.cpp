@@ -1,14 +1,14 @@
-#include "GameManager.h"
+#include "MyGameManager_322996059_211779582.h"
 
 using namespace GameManager_322996059_211779582;
-REGISTER_GAME_MANAGER(GameManager)
+REGISTER_GAME_MANAGER(MyGameManager_322996059_211779582)
 
 namespace GameManager_322996059_211779582 {
 
-GameManager::GameManager(bool verbose) : verbose(verbose) {}
+MyGameManager_322996059_211779582::MyGameManager_322996059_211779582(bool verbose) : verbose(verbose) {}
 
 
-void GameManager::checkStartingWinningCondition(){
+void MyGameManager_322996059_211779582::checkStartingWinningCondition(){
     bool tie = living_tanks_player1 == 0 && living_tanks_player2 == 0;
     bool player1_wins = living_tanks_player1 != 0 && living_tanks_player2 == 0;
     bool player2_wins = living_tanks_player1 == 0 && living_tanks_player2 != 0;
@@ -37,7 +37,7 @@ void GameManager::checkStartingWinningCondition(){
 }
 
 
-void GameManager::initializeGameBoard(const SatelliteView& map, TankAlgorithmFactory& player1_tank_algo_factory, TankAlgorithmFactory& player2_tank_algo_factory){
+void MyGameManager_322996059_211779582::initializeGameBoard(const SatelliteView& map, TankAlgorithmFactory& player1_tank_algo_factory, TankAlgorithmFactory& player2_tank_algo_factory){
     char ch;
     for (size_t y = 0; y < height; y++){
         for (size_t x = 0; x < width; x++){
@@ -62,7 +62,7 @@ void GameManager::initializeGameBoard(const SatelliteView& map, TankAlgorithmFac
     }
 }
 
-void GameManager::resetState(){
+void MyGameManager_322996059_211779582::resetState(){
     // Clear all objects
     for (size_t x = 0; x < width; x++){
         for (size_t y = 0; y < height; y++){
@@ -82,28 +82,28 @@ void GameManager::resetState(){
 
 
 // -------------------------------- Adding a game object --------------------------------
-void GameManager::addTank(int x, int y, Direction direction, int serial, int player, int tank_index, std::unique_ptr<TankAlgorithm> tank_algorithm){
+void MyGameManager_322996059_211779582::addTank(int x, int y, Direction direction, int serial, int player, int tank_index, std::unique_ptr<TankAlgorithm> tank_algorithm){
     std::unique_ptr<Tank> tank = std::make_unique<Tank>(x, y, direction, serial, player, tank_index, num_shells, std::move(tank_algorithm));
     Tank* raw = tank.get();
     tanks.push_back(std::move(tank));
     board[x][y].push_back(raw);
     return;
 }
-void GameManager::addWall(int x, int y){
+void MyGameManager_322996059_211779582::addWall(int x, int y){
     std::unique_ptr<Wall> wall = std::make_unique<Wall>(x, y);
     Wall* raw = wall.get();
     walls.push_back(std::move(wall));
     board[x][y].push_back(raw);
     return;
 }
-void GameManager::addMine(int x, int y){
+void MyGameManager_322996059_211779582::addMine(int x, int y){
     std::unique_ptr<Mine> mine = std::make_unique<Mine>(x, y);
     Mine* raw = mine.get();
     mines.push_back(std::move(mine));
     board[x][y].push_back(raw);
     return;
 }
-void GameManager::addShell(int x, int y, Direction direction){
+void MyGameManager_322996059_211779582::addShell(int x, int y, Direction direction){
     std::unique_ptr<Shell> shell = std::make_unique<Shell>(x, y, direction);
     Shell* raw = shell.get();
     shells.push_back(std::move(shell));
@@ -128,7 +128,7 @@ bool eraseByRawPointer(std::vector<std::unique_ptr<T>>& vec, T* ptr) {
 }
 
 
-void GameManager::deleteObject(GameObject* object_to_delete) {
+void MyGameManager_322996059_211779582::deleteObject(GameObject* object_to_delete) {
     // Step 1: Remove from the board
     auto& cell = board[object_to_delete->getX()][object_to_delete->getY()];
     cell.erase(std::remove(cell.begin(), cell.end(), object_to_delete), cell.end());
@@ -153,7 +153,7 @@ void GameManager::deleteObject(GameObject* object_to_delete) {
 }
 
 // ------------------------------- For debug purposes -----------------------------------------
-void GameManager::printing_board() const{
+void MyGameManager_322996059_211779582::printing_board() const{
     for (size_t y = 0; y < height; y++){
         for (size_t x = 0; x < width; x++){
             if (board[x][y].empty()){
@@ -175,7 +175,7 @@ void GameManager::printing_board() const{
     }
 }
 
-void GameManager::debug_runGame(){
+void MyGameManager_322996059_211779582::debug_runGame(){
     int sudden_death = 40;
     int sudden_death_counter = 0;
     bool sudden_death_flag = false;
@@ -226,7 +226,7 @@ void GameManager::debug_runGame(){
 }
 
 // -------------------------------------------- run and step functions ------------------------------------------------
-GameResult GameManager::run(
+GameResult MyGameManager_322996059_211779582::run(
         size_t map_width, size_t map_height,
 	    const SatelliteView& map, // <= a snapshot, NOT updated
         string map_name,
@@ -269,7 +269,7 @@ GameResult GameManager::run(
 }
 
 
-void GameManager::runGame(){
+void MyGameManager_322996059_211779582::runGame(){
     int sudden_death = 40;
     int sudden_death_counter = 0;
     bool sudden_death_flag = false;
@@ -312,7 +312,7 @@ void GameManager::runGame(){
 }
 
 
-void GameManager::step(){
+void MyGameManager_322996059_211779582::step(){
     initializeOutputMessages();
     // Foreach tank, we ask the corresponsing TankAlgorithm for an action
     for(const std::unique_ptr<Tank>& tank : tanks){
@@ -357,7 +357,7 @@ void GameManager::step(){
 // ------------------------------------------------ Utilis ----------------------------------------------------
 
 // Deletes all the objects that will collide passed each other ("mid-way" collision)
-void GameManager::deleteCollidingObjects(bool only_shells){
+void MyGameManager_322996059_211779582::deleteCollidingObjects(bool only_shells){
     // We initialize a vector, that will contain all the objects that colided "mid-way".
     // Once we populate the vector, all objects in it will need to be deleted
     std::vector<GameObject*> colided_objects;
@@ -373,7 +373,7 @@ void GameManager::deleteCollidingObjects(bool only_shells){
 }
 
 
-void GameManager::setSatelliteView(MySatelliteView* satellite) const{
+void MyGameManager_322996059_211779582::setSatelliteView(MySatelliteView* satellite) const{
     for (size_t x = 0; x < width; x++){
         for (size_t y = 0; y < height; y++){
             if (board[x][y].empty()){
@@ -403,7 +403,7 @@ void GameManager::setSatelliteView(MySatelliteView* satellite) const{
 }
 
 // Moves all the shells
-void GameManager::moveAllShells(){
+void MyGameManager_322996059_211779582::moveAllShells(){
     for (const std::unique_ptr<Shell>& shell : shells) {
         moveWrapper(shell.get());
     }
@@ -411,14 +411,14 @@ void GameManager::moveAllShells(){
 
 
 // Perform all tanks actions
-void GameManager::performTanksAction(MySatelliteView& satellite){
+void MyGameManager_322996059_211779582::performTanksAction(MySatelliteView& satellite){
     for (const std::unique_ptr<Tank>& tank : tanks) {
         performAction(tank.get(), satellite);
     }
 }
 
 
-void GameManager::moveWrapper(GameObject *obj){
+void MyGameManager_322996059_211779582::moveWrapper(GameObject *obj){
     Direction direc;
     // getting the object (tank or shell) direction
     if (Tank* t = dynamic_cast<Tank*>(obj)) {
@@ -456,7 +456,7 @@ void GameManager::moveWrapper(GameObject *obj){
     obj->setX(new_x);
 }
 
-bool GameManager::setTankDirectionOfCollision(Tank* t, Direction& dir) const{
+bool MyGameManager_322996059_211779582::setTankDirectionOfCollision(Tank* t, Direction& dir) const{
     ActionRequest action = t->getActionToPerform();
     int backward_count = t->getBackwardCount();
     // first we check if the tank plans to move or shoot this step
@@ -478,7 +478,7 @@ bool GameManager::setTankDirectionOfCollision(Tank* t, Direction& dir) const{
     return false;
 }
 
-void GameManager::markMidwayCollisions(GameObject* obj, std::vector<GameObject*>& colided_objects, bool only_shells) const{
+void MyGameManager_322996059_211779582::markMidwayCollisions(GameObject* obj, std::vector<GameObject*>& colided_objects, bool only_shells) const{
     Direction our_direction_of_movement; // The direction obj will move/shoot towards. #### First Step ####:  we want to initialize our_direction_of_movement
     if (Shell* our_shell = dynamic_cast<Shell*>(obj)){
         our_direction_of_movement = our_shell->getDirection();
@@ -519,7 +519,7 @@ void GameManager::markMidwayCollisions(GameObject* obj, std::vector<GameObject*>
     }
 }
 
-void GameManager::clearBoardCollision(std::vector<GameObject*>& colided_objects){
+void MyGameManager_322996059_211779582::clearBoardCollision(std::vector<GameObject*>& colided_objects){
     for (GameObject* obj : colided_objects) {
         if (Tank* t = dynamic_cast<Tank*>(obj)){
             if (t->getActionToPerform() == ActionRequest::Shoot){
@@ -535,7 +535,7 @@ void GameManager::clearBoardCollision(std::vector<GameObject*>& colided_objects)
 }
 
 
-void GameManager::emptyCell(size_t x, size_t y){
+void MyGameManager_322996059_211779582::emptyCell(size_t x, size_t y){
     // Make a copy so we can modify the original during iteration
     std::vector<GameObject*> toDelete = board[x][y];
     for (GameObject* obj : toDelete){
@@ -544,7 +544,7 @@ void GameManager::emptyCell(size_t x, size_t y){
     board[x][y].clear();
 }
 
-void GameManager::boardChecksHelper(size_t& i, size_t& j, int& num_of_tanks, int& num_of_shells, int& num_of_walls, int& num_of_mines){
+void MyGameManager_322996059_211779582::boardChecksHelper(size_t& i, size_t& j, int& num_of_tanks, int& num_of_shells, int& num_of_walls, int& num_of_mines){
     if (num_of_walls == 1){
         // if there is a wall in the cell
         if (num_of_shells >= 2){
@@ -579,7 +579,7 @@ void GameManager::boardChecksHelper(size_t& i, size_t& j, int& num_of_tanks, int
     }
 }
 
-void GameManager::boardChecks(){
+void MyGameManager_322996059_211779582::boardChecks(){
     // Foreach cell in the board
     for (size_t i = 0; i < width; i++){
         for (size_t j = 0; j < height; j++){
@@ -607,7 +607,7 @@ void GameManager::boardChecks(){
     }
 }
 
-void GameManager::setBadStep(const std::unique_ptr<Tank>& tank, bool resetBackwardCount){
+void MyGameManager_322996059_211779582::setBadStep(const std::unique_ptr<Tank>& tank, bool resetBackwardCount){
     tank->setBadMove(true);
     output_messages[tank->getSerial()] += " (ignored)";
     tank->setActionToPerform(ActionRequest::DoNothing);
@@ -616,7 +616,7 @@ void GameManager::setBadStep(const std::unique_ptr<Tank>& tank, bool resetBackwa
     }
 }
 
-void GameManager::checkActionLegality(){
+void MyGameManager_322996059_211779582::checkActionLegality(){
     for (const std::unique_ptr<Tank>& tank : tanks){
         ActionRequest action = tank->getActionToPerform();
         int backward_count = tank->getBackwardCount();
@@ -656,14 +656,14 @@ void GameManager::checkActionLegality(){
     }
 }
 
-void GameManager::performShoot(Tank* tank){
+void MyGameManager_322996059_211779582::performShoot(Tank* tank){
     // adding a new shell to the tank position
     std::pair<int, int> new_loc = move(std::make_pair(tank->getX(), tank->getY()), width, height, tank->getDirection());
     addShell(new_loc.first, new_loc.second, tank->getDirection());
     tank->decrementShellNum();
     tank->setShootCooldown(5); // 5 because we decrement it in this turn too
 }
-void GameManager::performGetBattleInfo(Tank* tank, MySatelliteView& satellite){
+void MyGameManager_322996059_211779582::performGetBattleInfo(Tank* tank, MySatelliteView& satellite){
     int x = tank->getX();
     int y = tank->getY();
     char saved_char = satellite.getObjectAt(x, y);
@@ -680,7 +680,7 @@ void GameManager::performGetBattleInfo(Tank* tank, MySatelliteView& satellite){
 }
 
 
-void GameManager::performAction(Tank* tank, MySatelliteView& satellite){
+void MyGameManager_322996059_211779582::performAction(Tank* tank, MySatelliteView& satellite){
     ActionRequest action = tank->getActionToPerform();
     int backward_count = tank->getBackwardCount();
     // reseting the backward_count if necessary
@@ -720,7 +720,7 @@ void GameManager::performAction(Tank* tank, MySatelliteView& satellite){
 
 
 
-void GameManager::updateBackwardCount(){
+void MyGameManager_322996059_211779582::updateBackwardCount(){
     for (const std::unique_ptr<Tank>& tank : tanks){
         int backward_count = tank->getBackwardCount();
         ActionRequest action = tank->getActionToPerform();
@@ -730,7 +730,7 @@ void GameManager::updateBackwardCount(){
     }
 }
 
-void GameManager::updateShootCooldown(){
+void MyGameManager_322996059_211779582::updateShootCooldown(){
     for (const std::unique_ptr<Tank>& tank : tanks){
         int shoot_cooldown = tank->getShootCooldown();
         if (shoot_cooldown > 0){
@@ -739,13 +739,13 @@ void GameManager::updateShootCooldown(){
     }
 }
 
-void GameManager::resetBadAction(){
+void MyGameManager_322996059_211779582::resetBadAction(){
     for (const std::unique_ptr<Tank>& tank : tanks){
         tank->setBadMove(false);
     }
 }
 
-bool GameManager::checkSuddenDeath() const{
+bool MyGameManager_322996059_211779582::checkSuddenDeath() const{
     for (const std::unique_ptr<Tank>& tank : tanks){
         if (tank->getShellNum() != 0){
             return false;
@@ -754,7 +754,7 @@ bool GameManager::checkSuddenDeath() const{
     return true;
 }
 
-bool GameManager::checkResult() const{
+bool MyGameManager_322996059_211779582::checkResult() const{
     if ((living_tanks_player1 == 0) && (living_tanks_player2 == 0)){
         if (verbose){
             writeToOutputFile("Tie, both players have zero tanks");
@@ -776,7 +776,7 @@ bool GameManager::checkResult() const{
     return false;
 }
 
-void GameManager::setGameResult(int reason, int round_num){
+void MyGameManager_322996059_211779582::setGameResult(int reason, int round_num){
     // reason 0 - ALL_TANKS_DEAD
     // reason 1 - MAX_STEPS
     // reason 2 - ZERO_SHELLS
@@ -811,7 +811,7 @@ void GameManager::setGameResult(int reason, int round_num){
 }
 
 // --------------------- Function utilities that help write content to the output file ----------------------------
-void GameManager::writeToOutputFile(const std::string& content) const{
+void MyGameManager_322996059_211779582::writeToOutputFile(const std::string& content) const{
     // The function was writting by ChatGPT
     std::ios_base::openmode mode;
 
@@ -831,13 +831,13 @@ void GameManager::writeToOutputFile(const std::string& content) const{
     }
 }
 
-void GameManager::initializeOutputMessages(){
+void MyGameManager_322996059_211779582::initializeOutputMessages(){
     for (std::string& msg : output_messages) {
         msg = "killed";
     }
 }
 
-void GameManager::writeStepActions() const{
+void MyGameManager_322996059_211779582::writeStepActions() const{
     std::string result;
     for (size_t i = 0; i < output_messages.size(); ++i) {
         result += output_messages[i];

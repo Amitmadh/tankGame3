@@ -1,5 +1,7 @@
 #include "MySatelliteView.h"
 
+namespace UserCommon_322996059_211779582 {
+
 MySatelliteView::MySatelliteView() = default;
 
 MySatelliteView::MySatelliteView(size_t width, size_t height)
@@ -23,3 +25,4 @@ void MySatelliteView::setObjectAt(size_t x, size_t y, char object) {
     grid[x][y] = object;
 }
 
+}

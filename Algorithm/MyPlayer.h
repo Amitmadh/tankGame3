@@ -1,8 +1,10 @@
 #pragma once
 #include "../common/Player.h"
+#include "../UserCommon/GameUtilis.h"
 #include <utility>
 
 namespace Algorithm_322996059_211779582 {
+using namespace UserCommon_322996059_211779582;
 
 class MyPlayer : public Player {
 protected:

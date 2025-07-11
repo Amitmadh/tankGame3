@@ -7,6 +7,7 @@
 #include <iostream>
 
 namespace Algorithm_322996059_211779582 {
+using namespace UserCommon_322996059_211779582;
 
 class MyTankAlgorithm : public TankAlgorithm{
     public:

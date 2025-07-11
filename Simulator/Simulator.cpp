@@ -1,8 +1,24 @@
 #include "Simulator.h"
 
+Simulator::Simulator(SimulationConfig config) : config(config) {}
+
+void Simulator::run(){
+    loadSharedLibraries();
+    std::cout << "Number of game managers registered: " << GameManagerRegistrar::getGameManagerRegistrar().count() << std::endl; // TODO
+    std::cout << "Number algorithms registered: " << AlgorithmRegistrar::getAlgorithmRegistrar().count() << std::endl;
+
+    if (config.mode == Mode::Comparative){
+        runComparative();
+    }
+    else {
+        runCompetitive();
+    }
+    unloadSharedLibraries();
+}
+
 // ============================ READING BOARD FUNCTIONS =================================
 
-bool Simulator::readBoard(char* input_file, BoardInfo& board_info){
+bool Simulator::readBoard(std::string& input_file, BoardInfo& board_info) {
     std::ifstream file(input_file);
     if (!file) {
         std::cout << "Error: Cannot open file " << input_file << std::endl;
@@ -107,11 +123,296 @@ int Simulator::parseLine(const std::string& line, const std::string& key) const{
     } 
 }
 
-// =====================================================================================
+// ========================================================================================
 
-// ============================ Debug 1v1 Testing =========================================
+// ==================== Loading and Unloading .so files functions =========================
 
-bool Simulator::debugBattle(char* map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2){
+bool Simulator::loadSharedLibraries(){
+    if (config.mode == Mode::Comparative){
+        bool load_game_managers_folder, load_algorithm1, load_algorithm2;
+        load_game_managers_folder = dlopenFolder(config.gameManagersFolder, true);
+        load_algorithm1 = dlopenFile(config.algorithm1, false);
+        if (areSameFile(config.algorithm1, config.algorithm2)){
+            load_algorithm2 = true;
+        }
+        else{
+            load_algorithm2 = dlopenFile(config.algorithm2, false);
+        }
+        if (!load_game_managers_folder || !load_algorithm1 || !load_algorithm2){
+            return false;
+        }
+        return true;
+    }
+    else { // Competitive
+        bool load_game_manager, load_algorithms_folder;
+        load_game_manager = dlopenFile(config.gameManagerFile, true);
+        load_algorithms_folder = dlopenFolder(config.algorithmsFolder, false);
+        if (!load_game_manager || !load_algorithms_folder){
+            return false;
+        }
+        return true;
+    }
+}
+
+void Simulator::unloadSharedLibraries(){
+    GameManagerRegistrar::getGameManagerRegistrar().clear();
+    AlgorithmRegistrar::getAlgorithmRegistrar().clear();
+    for (auto handle : handles) {
+        if (handle) {
+            dlclose(handle);
+        }
+    }
+    handles.clear();
+}
+
+
+bool Simulator::dlopenFolder(const std::string& folderPath, bool for_game_manager) {
+    for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".so") {
+            std::string soPath = entry.path().string();
+            if (!dlopenFile(soPath, for_game_manager)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+ bool Simulator::dlopenFile(const std::string& filePath, bool for_game_manager) {
+    if (for_game_manager){
+        auto& game_manager_registrar = GameManagerRegistrar::getGameManagerRegistrar();
+        game_manager_registrar.createGameManagerFactoryEntry(filePath);
+        void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
+        if (!handle) {
+            std::cout << "Failed to load the following .so file - " << filePath << ": " << dlerror() << std::endl;
+            return false;
+        } else {
+            std::cout << "Loaded: " << filePath << std::endl; // TODO - delete this line
+            handles.push_back(handle);
+            return true;
+        }
+        game_manager_registrar.validateLastRegistration();
+    }
+    else {
+        auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
+        algorithm_registrar.createAlgorithmFactoryEntry(filePath);
+        void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
+        if (!handle) {
+            std::cout << "Failed to load the following .so file - " << filePath << ": " << dlerror() << std::endl;
+            return false;
+        } else {
+            std::cout << "Loaded: " << filePath << std::endl; // TODO - delete this line
+            handles.push_back(handle);
+            return true;
+        }
+        algorithm_registrar.validateLastRegistration();
+    }
+}
+
+bool Simulator::areSameFile(const std::string& path1, const std::string& path2) {
+    try {
+        return std::filesystem::canonical(std::filesystem::path(path1)) == std::filesystem::canonical(std::filesystem::path(path2));
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+        return false;
+    }
+}
+// ========================================================================================
+
+// ================================== Comparative =========================================
+
+void Simulator::runComparative() {
+    int num_threads = config.numThreads;
+    BoardInfo board_info;
+    readBoard(config.gameMapFile, board_info);
+    int game_managers_size = GameManagerRegistrar::getGameManagerRegistrar().count();
+    std::vector<GameResult> results(game_managers_size);
+    if (num_threads == 1) {
+        runComparativeThread(0, num_threads, game_managers_size, std::ref(results), std::ref(board_info));
+    }
+    else{
+        std::vector<std::thread> threads;
+        for (int i = 0; i < num_threads; ++i) {
+            threads.emplace_back([this, i, num_threads, game_managers_size, &results, &board_info]() {
+                this->runComparativeThread(i, num_threads, game_managers_size, results, board_info);
+                    });
+        }
+        for (auto& thread : threads) {
+            thread.join();
+        }
+    }
+    std::vector<std::vector<int>> grouped_results(game_managers_size);
+    groupByIdenticalOutcome(results, grouped_results, board_info.map_width, board_info.map_height);
+    std::sort(grouped_results.begin(), grouped_results.end(),
+          [](const std::vector<int>& a, const std::vector<int>& b) {
+              return a.size() > b.size(); // descending order
+          });
+    std::cout << "first: " << grouped_results[0][0] << std::endl;
+    std::cout << "second: " << grouped_results[1][0] << std::endl;
+    writeComparativeOutput(results, grouped_results, board_info.map_width, board_info.map_height);
+}
+
+void Simulator::runComparativeThread(int thread_id, int num_threads, int game_managers_size, std::vector<GameResult>& results, BoardInfo& board_info){
+    auto& game_manager_registrar = GameManagerRegistrar::getGameManagerRegistrar();
+    auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
+    // Default to first algorithm; if two are registered, use the second for the second player
+    auto algorithm1_registrar_entry = algorithm_registrar.at(0);
+    auto algorithm2_registrar_entry = algorithm_registrar.at(0);
+    if (algorithm_registrar.count() == 2) {
+        algorithm2_registrar_entry = algorithm_registrar.at(1);
+    }
+    std::unique_ptr<Player> player1 = algorithm1_registrar_entry.createPlayer(1,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
+    std::unique_ptr<Player> player2 = algorithm2_registrar_entry.createPlayer(2,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
+    TankAlgorithmFactory player1_tank_algo_factory = algorithm1_registrar_entry.getTankAlgorithmFactory();
+    TankAlgorithmFactory player2_tank_algo_factory = algorithm2_registrar_entry.getTankAlgorithmFactory();
+
+    for (int i = thread_id; i < game_managers_size; i += num_threads) {
+        auto game_manager_registrar_entry = game_manager_registrar.at(i);
+        std::unique_ptr<AbstractGameManager> game_manager = game_manager_registrar_entry.createGameManager(config.verbose);
+        std::string map_name = extractBaseName(config.gameMapFile);
+        std::string name1 = extractBaseName(config.algorithm1);
+        std::string name2 = extractBaseName(config.algorithm2);
+        GameResult result = game_manager->run(board_info.map_width, board_info.map_height, board_info.map, map_name ,board_info.max_steps, board_info.num_shells, *player1.get(), name1 ,*player2.get(), name2 , player1_tank_algo_factory, player2_tank_algo_factory);
+        results[i] = std::move(result);
+    }
+}
+
+void Simulator::groupByIdenticalOutcome(std::vector<GameResult>& results, std::vector<std::vector<int>>& grouped_results, size_t map_width, size_t map_height){
+    for (size_t i = 0; i < results.size(); i++){
+        std::cout << UserCommon_322996059_211779582::stringGameResult(results[i], map_width, map_height);
+        for (std::vector<int>& group : grouped_results){
+            if (group.empty()){
+                group.push_back(i);
+                break;
+            }
+            else if (compareGameResult(results[i], results[group.back()], map_width, map_height)){
+                group.push_back(i);
+                break;
+            }
+        }
+    }
+}
+
+void Simulator::writeComparativeOutput(std::vector<GameResult>& results, std::vector<std::vector<int>>& grouped_results, size_t map_width, size_t map_height){
+    std::filesystem::path folder = config.gameManagersFolder;
+    std::string filename = "comparative_results_" + UserCommon_322996059_211779582::generateTimeBasedString() + ".txt";
+    std::filesystem::path full_path = folder / filename;
+    std::ofstream file(full_path);
+
+    if (!file) {
+        std::cout << "The file of comparative_results cannot be created in the folder: " << config.gameManagersFolder << std::endl;
+        printComparativeOutput(results, grouped_results, map_width, map_height);
+    }
+    else{
+        file << "game_map=" << extractBaseName(config.gameMapFile) << std::endl;
+        file << "algorithm1=" << extractBaseName(config.algorithm1) << std::endl;
+        file << "algorithm2=" << extractBaseName(config.algorithm2) << std::endl;
+        file << std::endl;
+        for (std::vector<int>& group : grouped_results){
+            if (group.empty()){
+                break;
+            }
+            else {
+                file << line5(group) << std::endl;
+                int result_index = group.back();
+                file << line6(results[result_index]) << std::endl;
+                file << results[result_index].rounds << std::endl;
+                for (size_t y = 0; y < map_height; y++){
+                    for (size_t x = 0; x < map_width; x++){
+                        file << results[result_index].gameState->getObjectAt(x, y);
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+    }
+}
+
+void Simulator::printComparativeOutput(std::vector<GameResult>& results, std::vector<std::vector<int>>& grouped_results, size_t map_width, size_t map_height){
+    std::cout << "game_map=" << extractBaseName(config.gameMapFile) << std::endl;
+    std::cout << "algorithm1=" << extractBaseName(config.algorithm1) << std::endl;
+    std::cout << "algorithm2=" << extractBaseName(config.algorithm2) << std::endl;
+    std::cout << std::endl;
+    for (std::vector<int>& group : grouped_results){
+        if (group.empty()){
+            break;
+        }
+        else {
+            std::cout << line5(group) << std::endl;
+            int result_index = group.back();
+            std::cout << line6(results[result_index]) << std::endl;
+            std::cout << results[result_index].rounds << std::endl;
+            for (size_t y = 0; y < map_height; y++){
+                for (size_t x = 0; x < map_width; x++){
+                    std::cout << results[result_index].gameState->getObjectAt(x, y);
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+}
+
+bool Simulator::compareGameResult(const GameResult& result1, const GameResult& result2, size_t map_width, size_t map_height){
+    bool same_winner = result1.winner == result2.winner;
+    bool same_reason = result1.reason == result2.reason;
+    bool same_rounds = result1.rounds == result2.rounds;
+    bool same_game_state = true;
+    for (size_t x = 0; x < map_width; x++){
+        for (size_t y = 0; y < map_height; y++){
+            if (result1.gameState->getObjectAt(x, y) != result2.gameState->getObjectAt(x, y)){
+                same_game_state = false;
+            }
+        }
+    }
+    return same_winner && same_reason && same_rounds && same_game_state;
+}
+
+std::string Simulator::line5(std::vector<int>& group){
+    auto& game_manager_registrar = GameManagerRegistrar::getGameManagerRegistrar();
+    std::string line_5 = "";
+    for(size_t i = 0; i < group.size(); i++){
+        line_5 += extractBaseName(game_manager_registrar.at(group[i]).name());
+        if (i + 1 < group.size()){
+            line_5 += ", ";
+        }
+    }
+    return line_5;
+}
+
+std::string Simulator::line6(const GameResult& result){
+    if (result.reason == GameResult::Reason::ALL_TANKS_DEAD){
+        if (result.winner == 1){
+            return "Player 1 won with " + std::to_string(result.remaining_tanks[0]) + " tanks still alive";
+        }
+        else if (result.winner == 2){
+            return "Player 2 won with " + std::to_string(result.remaining_tanks[1]) + " tanks still alive"; 
+        }
+        else{
+            return "Tie, both players have zero tanks";
+        }
+    }
+    else if (result.reason == GameResult::Reason::MAX_STEPS){
+        return "Tie, reached max steps = " + std::to_string(result.rounds) + ", player 1 has " + std::to_string(result.remaining_tanks[0]) + " tanks, player 2 has "+ std::to_string(result.remaining_tanks[1]) + " tanks";
+    }
+    else {
+        return "Tie, both players have zero shells for 40 steps";
+    }
+}
+
+// ========================================================================================
+
+// ================================== Competitive =========================================
+ void Simulator::runCompetitive(){
+
+ }
+
+
+
+// ========================================================================================
+
+// ================================ Debug 1v1 Testing =====================================
+
+bool Simulator::debugBattle(std::string map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2){
 
     // ============= Reading Board ================
     BoardInfo board_info;
@@ -164,7 +465,7 @@ bool Simulator::debugBattle(char* map_file, std::string so_path_game_manager, st
         std::string name1 = extractBaseName(so_path_algorithm1);
         std::string name2 = extractBaseName(so_path_algorithm2);
         GameResult result = game_manager->run(board_info.map_width, board_info.map_height, board_info.map, map_name ,board_info.max_steps, board_info.num_shells, *player1.get(), name1 ,*player2.get(), name2 , player1_tank_algo_factory, player2_tank_algo_factory);
-        std::cout << stringGameResult(result, board_info.map_width, board_info.map_height);
+        std::cout << UserCommon_322996059_211779582::stringGameResult(result, board_info.map_width, board_info.map_height);
     }
     // ============= Clearing registrars and unloading ================
     game_manager_registrar.clear();
@@ -174,3 +475,23 @@ bool Simulator::debugBattle(char* map_file, std::string so_path_game_manager, st
     dlclose(handle_algorithm2);
     return true;
 }
+
+// ========================================================================================
+
+// ================================ General helper functions ==============================
+
+std::string Simulator::extractBaseName(const std::string& path) {
+    // Find last slash
+    size_t slash_pos = path.find_last_of("/\\");
+    size_t start = (slash_pos == std::string::npos) ? 0 : slash_pos + 1;
+
+    // Find last dot
+    size_t dot_pos = path.find_last_of('.');
+    size_t end = (dot_pos == std::string::npos || dot_pos < start) ? path.size() : dot_pos;
+
+    // Return substring between them
+    return path.substr(start, end - start);
+}
+
+
+// ========================================================================================

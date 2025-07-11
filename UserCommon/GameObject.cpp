@@ -1,5 +1,7 @@
 #include "GameObject.h"
 
+namespace UserCommon_322996059_211779582 {
+
 GameObject::GameObject(int x, int y): x(x) , y(y){}
 GameObject::~GameObject() {}
 
@@ -18,4 +20,6 @@ void GameObject::setX(int new_x){
 }
 void GameObject::setY(int new_y){
     y = new_y;
+}
+
 }

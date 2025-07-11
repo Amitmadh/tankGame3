@@ -2,6 +2,8 @@
 
 #include "GameUtilis.h"
 
+namespace UserCommon_322996059_211779582 {
+
 class GameObject {
     int x;
     int y;
@@ -17,3 +19,5 @@ public:
     void setX(int new_x);
     void setY(int new_y);
 };
+
+}

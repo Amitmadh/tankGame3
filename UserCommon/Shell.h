@@ -2,6 +2,8 @@
 
 #include "GameObject.h"
 
+namespace UserCommon_322996059_211779582 {
+
 class Shell: public GameObject {
     Direction direction;
 
@@ -10,3 +12,5 @@ public:
     // Getters and Setters
     Direction getDirection() const;
 };
+
+}

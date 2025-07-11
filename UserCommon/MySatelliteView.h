@@ -3,6 +3,8 @@
 #include "../common/SatelliteView.h"
 #include <vector>
 
+namespace UserCommon_322996059_211779582 {
+
 
 class MySatelliteView : public SatelliteView {
     size_t width;
@@ -19,3 +21,5 @@ public:
 
     void initialize(size_t width, size_t height);
 };
+
+}

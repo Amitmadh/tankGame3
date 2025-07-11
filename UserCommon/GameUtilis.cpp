@@ -1,5 +1,7 @@
 #include "GameUtilis.h"
 
+namespace UserCommon_322996059_211779582 {
+
 
 std::pair<int, int> move(std::pair<int, int> loc, int width, int height, Direction direction){
     int x = loc.first;
@@ -343,15 +345,4 @@ std::string generateTimeBasedString() {
 }
 
 
-std::string extractBaseName(const std::string& path) {
-    // Find last slash
-    size_t slash_pos = path.find_last_of("/\\");
-    size_t start = (slash_pos == std::string::npos) ? 0 : slash_pos + 1;
-
-    // Find last dot
-    size_t dot_pos = path.find_last_of('.');
-    size_t end = (dot_pos == std::string::npos || dot_pos < start) ? path.size() : dot_pos;
-
-    // Return substring between them
-    return path.substr(start, end - start);
 }

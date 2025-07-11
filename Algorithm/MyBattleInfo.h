@@ -1,9 +1,11 @@
 #pragma once
 
 #include "../common/BattleInfo.h"
+#include "../UserCommon/GameUtilis.h"
 #include <vector>
 
 namespace Algorithm_322996059_211779582 {
+using namespace UserCommon_322996059_211779582;
 
 class MyBattleInfo : public BattleInfo {
 protected:
