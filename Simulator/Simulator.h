@@ -39,14 +39,15 @@ public:
     Simulator(SimulationConfig config);
     void run();
 
+    // Debug Functions:
+    bool debugBattle(std::string map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2);
+
+private:
     // Functions for loading and unloading all the .so files
     bool loadSharedLibraries(); // Return false if failed
     void unloadSharedLibraries();
 
-    // =============== Debug Functions ===============
-    bool debugBattle(std::string map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2);
 
-private:
     // Comparative function
     void runComparative();
     // runComparative helper functions:
@@ -67,18 +68,19 @@ private:
     // Reading board function
     bool readBoard(std::string& input_file, BoardInfo& board_info); // Return false if failed
     // readBoard helper functions:
-    bool readFirstFiveLines(std::ifstream& file, BoardInfo& board_info); // Return false if failed
-    void readBoardLines(std::ifstream& file, BoardInfo& board_info);
+    bool readFirstFiveLines(std::ifstream& file, BoardInfo& board_info, std::string& input_file); // Return false if failed
+    void readBoardLines(std::ifstream& file, BoardInfo& board_info, std::string& input_file);
     int parseLine(const std::string& line, const std::string& key) const; // ChatGPT generated
 
 
     // loadSharedLibraries and unloadSharedLibraries helper functions:
-    bool dlopenFolder(const std::string& folderPath, bool for_game_manager); // Return false if failed
+    int dlopenFolder(const std::string& folderPath, bool for_game_manager); // Return number of successful loaded files
     bool dlopenFile(const std::string& filePath, bool for_game_manager); // Return false if failed
     bool areSameFile(const std::string& path1, const std::string& path2);
 
 
     // General helper functions:
-    std::string extractBaseName(const std::string& path);
+    std::string extractBaseName(const std::string& path); // ChatGPT generated
+    void appendToFile(const std::string& filepath, const std::string& content); // ChatGPT generated
 
 };

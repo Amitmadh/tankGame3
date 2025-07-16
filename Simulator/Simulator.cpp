@@ -3,9 +3,13 @@
 Simulator::Simulator(SimulationConfig config) : config(config) {}
 
 void Simulator::run(){
-    loadSharedLibraries();
-    std::cout << "Number of game managers registered: " << GameManagerRegistrar::getGameManagerRegistrar().count() << std::endl; // TODO
-    std::cout << "Number algorithms registered: " << AlgorithmRegistrar::getAlgorithmRegistrar().count() << std::endl;
+    if(!loadSharedLibraries()){
+        std::cout << "Failed loading necessary parts - Exiting!" << std::endl;
+        unloadSharedLibraries();
+        return;
+    }
+    std::cout << "Number of game_managers registered: " << GameManagerRegistrar::getGameManagerRegistrar().count() << std::endl; // TODO - delete
+    std::cout << "Number algorithms registered: " << AlgorithmRegistrar::getAlgorithmRegistrar().count() << std::endl; // TODO - delete
 
     if (config.mode == Mode::Comparative){
         runComparative();
@@ -21,25 +25,25 @@ void Simulator::run(){
 bool Simulator::readBoard(std::string& input_file, BoardInfo& board_info) {
     std::ifstream file(input_file);
     if (!file) {
-        std::cout << "Error: Cannot open file " << input_file << std::endl;
+        appendToFile("input_errors.txt", "Error: Cannot open file " + input_file);
         return false;
     }
     // Reading first 5 lines of the instructions
-    if(!readFirstFiveLines(file, board_info)){
+    if(!readFirstFiveLines(file, board_info, input_file)){
         return false;
     }
     board_info.map.initialize(board_info.map_width, board_info.map_height);
     // READING BOARD 
-    readBoardLines(file, board_info);
+    readBoardLines(file, board_info, input_file);
     file.close();
     return true;
 }
 
-bool Simulator::readFirstFiveLines(std::ifstream& file, BoardInfo& board_info){
+bool Simulator::readFirstFiveLines(std::ifstream& file, BoardInfo& board_info, std::string& input_file){
     std::string line;
     // Line 1: Description (ignored)
     if (!std::getline(file, line)) {
-        std::cout << "Error: File is empty or missing description line." << std::endl;
+        appendToFile("input_errors.txt", "Error: Map file is empty - " + input_file);
         file.close();
         return false;
     }
@@ -61,14 +65,14 @@ bool Simulator::readFirstFiveLines(std::ifstream& file, BoardInfo& board_info){
         board_info.map_width = parseLine(line, "Cols");
     }
     catch (const std::runtime_error& e) {
-        std::cout << e.what() << std::endl;
+        appendToFile("input_errors.txt", "Error: Unrecoverable errors in map file " + input_file + " : " + e.what());
         file.close();
         return false;
     }
     return true;
 }
 
-void Simulator::readBoardLines(std::ifstream& file, BoardInfo& board_info){
+void Simulator::readBoardLines(std::ifstream& file, BoardInfo& board_info, std::string& input_file){
     char ch, dummy;
     bool underflow = false;
     bool overflow = false;
@@ -77,38 +81,32 @@ void Simulator::readBoardLines(std::ifstream& file, BoardInfo& board_info){
             file.get(ch); // puts a char in ch
             if ((ch == '\n' && x == board_info.map_width) || (file.eof() && x == board_info.map_width && y == board_info.map_height - 1)){
                 break;
-            }
-            else if ((ch == '\n' || file.eof()) && x < board_info.map_width){
+            } else if ((ch == '\n' || file.eof()) && x < board_info.map_width){
                 underflow = true;
                 break;
-            }
-            else if (ch != '\n' && x == board_info.map_width){
+            } else if (ch != '\n' && x == board_info.map_width){
                 overflow = true;
                 while (file.get(ch)) { // Skipping the rest of the line
                     if (ch == '\n'){
                         break;
                     }
                 }
-            }
-            else if (ch == '#'){
+            } else if (ch == '#'){
                 board_info.map.setObjectAt(x, y, '#');
-            }
-            else if (ch == '1') {
+            } else if (ch == '1') {
                 board_info.map.setObjectAt(x, y, '1');
-            }
-            else if (ch == '2') {
+            } else if (ch == '2') {
                 board_info.map.setObjectAt(x, y, '2');
-            }
-            else if (ch == '@'){
+            } else if (ch == '@'){
                 board_info.map.setObjectAt(x, y, '@');
             }
         }
     }
     if (file.get(dummy)) overflow = true;
     if (overflow || underflow) {
-        std::ofstream errorFile("input_errors.txt");
-        if (underflow) errorFile << "There are missing rows or columns!\n";
-        if (overflow) errorFile << "There are additional rows or columns beyond the required!\n";
+        appendToFile("input_errors.txt", "Recovered the following errors in map file " + input_file + " :");
+        if (underflow) appendToFile("input_errors.txt", "There are missing rows or columns!");
+        if (overflow) appendToFile("input_errors.txt", "There are additional rows or columns beyond the required!");
     }
 }
 
@@ -129,25 +127,37 @@ int Simulator::parseLine(const std::string& line, const std::string& key) const{
 
 bool Simulator::loadSharedLibraries(){
     if (config.mode == Mode::Comparative){
-        bool load_game_managers_folder, load_algorithm1, load_algorithm2;
-        load_game_managers_folder = dlopenFolder(config.gameManagersFolder, true);
-        load_algorithm1 = dlopenFile(config.algorithm1, false);
+        bool loaded_algorithm1, loaded_algorithm2;
+        int num_loaded_game_managers_files;
+        num_loaded_game_managers_files = dlopenFolder(config.gameManagersFolder, true);
+        loaded_algorithm1 = dlopenFile(config.algorithm1, false);
         if (areSameFile(config.algorithm1, config.algorithm2)){
-            load_algorithm2 = true;
+            loaded_algorithm2 = true;
+        } else {
+            loaded_algorithm2 = dlopenFile(config.algorithm2, false);
         }
-        else{
-            load_algorithm2 = dlopenFile(config.algorithm2, false);
-        }
-        if (!load_game_managers_folder || !load_algorithm1 || !load_algorithm2){
+        if (num_loaded_game_managers_files == 0 || !loaded_algorithm1 || !loaded_algorithm2){
+            if (!loaded_algorithm1) {
+                std::cout << "Usage: Algorithm1 couldn't load successfully" << std::endl;
+            } else if (!loaded_algorithm2) {
+                std::cout << "Usage: Algorithm2 couldn't load successfully" << std::endl;
+            } else {
+                std::cout << "Usage: No game_manager could load successfully" << std::endl;
+            }
             return false;
         }
         return true;
-    }
-    else { // Competitive
-        bool load_game_manager, load_algorithms_folder;
-        load_game_manager = dlopenFile(config.gameManagerFile, true);
-        load_algorithms_folder = dlopenFolder(config.algorithmsFolder, false);
-        if (!load_game_manager || !load_algorithms_folder){
+    } else { // Competitive
+        bool loaded_game_manager;
+        int num_loaded_algorithms_file;
+        loaded_game_manager = dlopenFile(config.gameManagerFile, true);
+        num_loaded_algorithms_file = dlopenFolder(config.algorithmsFolder, false);
+        if (!loaded_game_manager || num_loaded_algorithms_file == 0){
+            if (!loaded_game_manager) {
+                std::cout << "Usage: game_manager couldn't load successfully" << std::endl;
+            } else if (num_loaded_algorithms_file == 0){
+                std::cout << "Usage: No Algorithm could load successfully" << std::endl;
+            }
             return false;
         }
         return true;
@@ -166,16 +176,17 @@ void Simulator::unloadSharedLibraries(){
 }
 
 
-bool Simulator::dlopenFolder(const std::string& folderPath, bool for_game_manager) {
+int Simulator::dlopenFolder(const std::string& folderPath, bool for_game_manager) {
+    int num_of_loaded_files = 0;
     for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".so") {
             std::string soPath = entry.path().string();
-            if (!dlopenFile(soPath, for_game_manager)) {
-                return false;
+            if (dlopenFile(soPath, for_game_manager)) {
+                num_of_loaded_files++;
             }
         }
     }
-    return true;
+    return num_of_loaded_files;
 }
 
  bool Simulator::dlopenFile(const std::string& filePath, bool for_game_manager) {
@@ -184,29 +195,41 @@ bool Simulator::dlopenFolder(const std::string& folderPath, bool for_game_manage
         game_manager_registrar.createGameManagerFactoryEntry(filePath);
         void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
         if (!handle) {
-            std::cout << "Failed to load the following .so file - " << filePath << ": " << dlerror() << std::endl;
+            appendToFile("input_errors.txt", "Failed to load the following .so file - " + filePath + ": " + dlerror());
+            game_manager_registrar.removeLast();
             return false;
         } else {
-            std::cout << "Loaded: " << filePath << std::endl; // TODO - delete this line
+            try {
+                game_manager_registrar.validateLastRegistration();
+            } catch(GameManagerRegistrar::BadRegistrationException& e) {
+                appendToFile("input_errors.txt", "Failed to load the following .so file - " + filePath + ": BadRegistrationException");
+                game_manager_registrar.removeLast();
+                return false;
+            }
+            std::cout << "Loaded Game Manager successfully: " << filePath << std::endl; // TODO - delete this line
             handles.push_back(handle);
-            return true;
         }
-        game_manager_registrar.validateLastRegistration();
-    }
-    else {
+    } else {
         auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
         algorithm_registrar.createAlgorithmFactoryEntry(filePath);
         void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
         if (!handle) {
-            std::cout << "Failed to load the following .so file - " << filePath << ": " << dlerror() << std::endl;
+            appendToFile("input_errors.txt", "Failed to load the following .so file - " + filePath + ": " + dlerror());
+            algorithm_registrar.removeLast();
             return false;
         } else {
-            std::cout << "Loaded: " << filePath << std::endl; // TODO - delete this line
+            try {
+                algorithm_registrar.validateLastRegistration();
+            } catch(AlgorithmRegistrar::BadRegistrationException& e) {
+                appendToFile("input_errors.txt", "Failed to load the following .so file - " + filePath + ": BadRegistrationException");
+                algorithm_registrar.removeLast();
+                return false;
+            }
+            std::cout << "Loaded Algorithm successfully: " << filePath << std::endl; // TODO - delete this line
             handles.push_back(handle);
-            return true;
         }
-        algorithm_registrar.validateLastRegistration();
     }
+    return true;
 }
 
 bool Simulator::areSameFile(const std::string& path1, const std::string& path2) {
@@ -224,7 +247,10 @@ bool Simulator::areSameFile(const std::string& path1, const std::string& path2) 
 void Simulator::runComparative() {
     int num_threads = config.numThreads;
     BoardInfo board_info;
-    readBoard(config.gameMapFile, board_info);
+    if (!readBoard(config.gameMapFile, board_info)) {
+        std::cout << "Usage: Map file couldn't be read successfully" << std::endl;
+        return;
+    }
     int game_managers_size = GameManagerRegistrar::getGameManagerRegistrar().count();
     std::vector<GameResult> results(game_managers_size);
     if (num_threads == 1) {
@@ -247,8 +273,8 @@ void Simulator::runComparative() {
           [](const std::vector<int>& a, const std::vector<int>& b) {
               return a.size() > b.size(); // descending order
           });
-    std::cout << "first: " << grouped_results[0][0] << std::endl;
-    std::cout << "second: " << grouped_results[1][0] << std::endl;
+    std::cout << "first: " << grouped_results[0][0] << std::endl; // TODO - delete
+    std::cout << "second: " << grouped_results[1][0] << std::endl; // TODO - delete
     writeComparativeOutput(results, grouped_results, board_info.map_width, board_info.map_height);
 }
 
@@ -267,6 +293,7 @@ void Simulator::runComparativeThread(int thread_id, int num_threads, int game_ma
     TankAlgorithmFactory player2_tank_algo_factory = algorithm2_registrar_entry.getTankAlgorithmFactory();
 
     for (int i = thread_id; i < game_managers_size; i += num_threads) {
+        std::cout << "Thread ID: " << std::this_thread::get_id() << ", GameManager index: " << i << std::endl; // TODO - delete
         auto game_manager_registrar_entry = game_manager_registrar.at(i);
         std::unique_ptr<AbstractGameManager> game_manager = game_manager_registrar_entry.createGameManager(config.verbose);
         std::string map_name = extractBaseName(config.gameMapFile);
@@ -279,7 +306,6 @@ void Simulator::runComparativeThread(int thread_id, int num_threads, int game_ma
 
 void Simulator::groupByIdenticalOutcome(std::vector<GameResult>& results, std::vector<std::vector<int>>& grouped_results, size_t map_width, size_t map_height){
     for (size_t i = 0; i < results.size(); i++){
-        std::cout << UserCommon_322996059_211779582::stringGameResult(results[i], map_width, map_height);
         for (std::vector<int>& group : grouped_results){
             if (group.empty()){
                 group.push_back(i);
@@ -493,5 +519,26 @@ std::string Simulator::extractBaseName(const std::string& path) {
     return path.substr(start, end - start);
 }
 
+
+void Simulator::appendToFile(const std::string& filepath, const std::string& content) {
+    // Check if the file exists (creates it if it doesn't)
+    if (!std::filesystem::exists(filepath)) {
+        std::ofstream createFile(filepath); // creates the file
+        if (!createFile) {
+            std::cerr << "Error: Could not create file: " << filepath << std::endl;
+            return;
+        }
+    }
+
+    // Open file in append mode
+    std::ofstream outFile(filepath, std::ios::app);
+    if (!outFile) {
+        std::cerr << "Error: Could not open file for appending: " << filepath << std::endl;
+        return;
+    }
+
+    outFile << content << std::endl;
+    outFile.close();
+}
 
 // ========================================================================================
