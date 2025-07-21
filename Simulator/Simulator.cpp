@@ -333,12 +333,12 @@ void Simulator::writeComparativeOutput(std::vector<GameResult>& results, std::ve
         file << "game_map=" << extractBaseName(config.gameMapFile) << std::endl;
         file << "algorithm1=" << extractBaseName(config.algorithm1) << std::endl;
         file << "algorithm2=" << extractBaseName(config.algorithm2) << std::endl;
-        file << std::endl;
         for (std::vector<int>& group : grouped_results){
             if (group.empty()){
                 break;
             }
             else {
+                file << std::endl;
                 file << line5(group) << std::endl;
                 int result_index = group.back();
                 file << line6(results[result_index]) << std::endl;

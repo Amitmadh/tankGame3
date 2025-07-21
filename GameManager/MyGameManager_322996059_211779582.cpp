@@ -262,7 +262,7 @@ GameResult MyGameManager_322996059_211779582::run(
     // Initializing step_output_messages
     output_messages.resize(number_of_total_tanks);
 
-    debug_runGame();
+    runGame();
     
     resetState();
     return std::move(game_result);
