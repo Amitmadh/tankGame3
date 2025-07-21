@@ -7,7 +7,7 @@ OUT_SO = GameManager_$(ID1)_$(ID2).so
 
 # Compiler & Flags
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g -fPIC -I../common -I../UserCommon
+CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g -fPIC
 LDFLAGS = -shared
 
 # === FILE STRUCTURE ===
@@ -25,7 +25,6 @@ all: $(OUT_SO)
 
 $(OUT_SO): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^
-	@rm -f $(OBJS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

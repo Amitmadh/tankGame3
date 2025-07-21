@@ -7,7 +7,7 @@ OUT_EXE = simulator_$(ID1)_$(ID2)
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g -fPIC -I../common -I../UserCommon
+CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic -g -fPIC
 LDFLAGS = -rdynamic
 LDLIBS = -ldl  # Needed for dlopen
 
@@ -26,8 +26,6 @@ all: $(OUT_EXE)
 
 $(OUT_EXE): $(OBJS)
 	$(CXX) $(OBJS) $(LDFLAGS) $(LDLIBS) -o $@
-	@echo "Cleaning up .o files..."
-	@rm -f $(SRCDIR)/*.o $(USERCOMMONDIR)/*.o
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
