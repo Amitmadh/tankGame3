@@ -7,14 +7,14 @@
 
 namespace Algorithm_322996059_211779582 {
 
-class TankAlgorithm2 : public MyTankAlgorithm {
+class TankAlgorithm_322996059_211779582 : public MyTankAlgorithm {
     MyBattleInfo2 battle_info;
     bool is_only_tank = true;
     int turn_number = -1;
     int turns_to_get_battle_info = -1;
 
 public:
-    TankAlgorithm2(int player_index, int tank_index);
+    TankAlgorithm_322996059_211779582(int player_index, int tank_index);
     ActionRequest getAction() override;
     void updateBattleInfo(BattleInfo& info) override;
 

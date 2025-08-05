@@ -1,14 +1,14 @@
-#include "Player2.h"
+#include "Player_322996059_211779582.h"
 
 using namespace Algorithm_322996059_211779582;
-REGISTER_PLAYER(Player2);
+REGISTER_PLAYER(Player_322996059_211779582);
 
 namespace Algorithm_322996059_211779582 {
 
-Player2::Player2(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells) :
+Player_322996059_211779582::Player_322996059_211779582(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells) :
     MyPlayer(player_index, x, y, max_steps, num_shells){}
 
-void Player2::updateTankWithBattleInfo(TankAlgorithm& tank, SatelliteView& satellite_view) {
+void Player_322996059_211779582::updateTankWithBattleInfo(TankAlgorithm& tank, SatelliteView& satellite_view) {
     std::vector<std::vector<char>> new_board = getBoard(satellite_view);
     updateShells(board, new_board);
     board = new_board;
@@ -17,7 +17,7 @@ void Player2::updateTankWithBattleInfo(TankAlgorithm& tank, SatelliteView& satel
     tank.updateBattleInfo(battle_info);
 }
 
-Direction Player2::getShellDirection(std::vector<std::vector<char>> old_board, std::pair<int, int> shell_location) {
+Direction Player_322996059_211779582::getShellDirection(std::vector<std::vector<char>> old_board, std::pair<int, int> shell_location) {
     for (int dir = 0; dir < 8; dir++) {
         std::pair<int, int> previous_location = shell_location;
         for (int i = 0; i < 2; i++) {
@@ -35,7 +35,7 @@ Direction Player2::getShellDirection(std::vector<std::vector<char>> old_board, s
     return Direction::U;
 }
 
-void Player2::updateShells(std::vector<std::vector<char>> old_board, std::vector<std::vector<char>> new_board) {
+void Player_322996059_211779582::updateShells(std::vector<std::vector<char>> old_board, std::vector<std::vector<char>> new_board) {
         shells.clear();
         std::vector<std::pair<int, int>> shell_locations;
         for (size_t y = 0; y < height; y++) {

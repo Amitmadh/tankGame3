@@ -1,18 +1,18 @@
-#include "TankAlgorithm2.h"
+#include "TankAlgorithm_322996059_211779582.h"
 
 using namespace Algorithm_322996059_211779582;
-REGISTER_TANK_ALGORITHM(TankAlgorithm2);
+REGISTER_TANK_ALGORITHM(TankAlgorithm_322996059_211779582);
 
 namespace Algorithm_322996059_211779582 {
 
-TankAlgorithm2::TankAlgorithm2(int player_index, int tank_index) : MyTankAlgorithm(player_index, tank_index) {}
+TankAlgorithm_322996059_211779582::TankAlgorithm_322996059_211779582(int player_index, int tank_index) : MyTankAlgorithm(player_index, tank_index) {}
 
-void TankAlgorithm2::updateBattleInfo(BattleInfo& info) {
+void TankAlgorithm_322996059_211779582::updateBattleInfo(BattleInfo& info) {
     battle_info = (MyBattleInfo2&)info;
     MyTankAlgorithm::updateBattleInfo(info);
 }
 
-void TankAlgorithm2::updateTurnsToGetBattleInfo() {
+void TankAlgorithm_322996059_211779582::updateTurnsToGetBattleInfo() {
     if (battle_info.getFreindlyTanks().size() == 1) return;
     else if (turns_to_get_battle_info <= -1) {
         int counter = 0;
@@ -32,7 +32,7 @@ void TankAlgorithm2::updateTurnsToGetBattleInfo() {
     }
 }
 
-ActionRequest TankAlgorithm2::getAction() {
+ActionRequest TankAlgorithm_322996059_211779582::getAction() {
     updateTurnsToGetBattleInfo();
     is_only_tank = (battle_info.getFreindlyTanks().size() <= 1);
     turn_number++;
@@ -63,14 +63,14 @@ ActionRequest TankAlgorithm2::getAction() {
 }
 
 //check if the location is free (not occupied by same player tank, wall or mine)
-bool TankAlgorithm2::isFreePosition(std::pair<int, int> position) const {
+bool TankAlgorithm_322996059_211779582::isFreePosition(std::pair<int, int> position) const {
     char c = board[position.second][position.first];
     if (c == '2' || c == '#' || c == '@' || c == '*') return false;
     else return true;
 }
 
 /// BFS algorithm to find the direction towards the enemy tank
-ActionRequest TankAlgorithm2::findDirectionTowardsEnemy(){
+ActionRequest TankAlgorithm_322996059_211779582::findDirectionTowardsEnemy(){
     struct Step {
         std::pair<int, int> position;
         Direction first_direction;
@@ -127,7 +127,7 @@ ActionRequest TankAlgorithm2::findDirectionTowardsEnemy(){
 }
 
 //return The action needed to change the direction of the tank to the destination direction
-ActionRequest TankAlgorithm2::changeDirection(Direction dest) {
+ActionRequest TankAlgorithm_322996059_211779582::changeDirection(Direction dest) {
     int dest_dir = (int)dest;
     int change_dir = (int)dest_dir - (int)tank_direction;
 
@@ -155,7 +155,7 @@ ActionRequest TankAlgorithm2::changeDirection(Direction dest) {
     }
 }
 
-bool TankAlgorithm2::isAttacked() const {
+bool TankAlgorithm_322996059_211779582::isAttacked() const {
     if (isAttackedFromDir(Direction::U) && last_action_was_shoot) return false;
     for (Shell shell : battle_info.getShellsObject()) {
         std::pair<int, int> position(shell.getX(), shell.getY());
@@ -170,7 +170,7 @@ bool TankAlgorithm2::isAttacked() const {
     return false;
 }
 
-ActionRequest TankAlgorithm2::escapeShell(){
+ActionRequest TankAlgorithm_322996059_211779582::escapeShell(){
     if (isDirectionAvailible(Direction::U)) return moveForward();
     else if (isDirectionAvailible(Direction::UR)) return rotateTankEighthRight();  
     else if (isDirectionAvailible(Direction::R)) return rotateTankQuarterRight();

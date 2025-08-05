@@ -7,7 +7,7 @@
 
 namespace Algorithm_322996059_211779582 {
 
-class Player2 : public MyPlayer {
+class Player_322996059_211779582 : public MyPlayer {
     std::vector<std::vector<char>> board;
     std::vector<Shell> shells;
     
@@ -15,7 +15,7 @@ class Player2 : public MyPlayer {
     void updateShells(std::vector<std::vector<char>> old_board, std::vector<std::vector<char>> new_board);
 
     public:
-        Player2(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells);
+        Player_322996059_211779582(int player_index, size_t x, size_t y, size_t max_steps, size_t num_shells);
         
         void updateTankWithBattleInfo(TankAlgorithm& tank, SatelliteView& satellite_view) override;
 };

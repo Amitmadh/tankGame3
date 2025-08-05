@@ -245,7 +245,6 @@ bool Simulator::areSameFile(const std::string& path1, const std::string& path2) 
 // ================================== Comparative =========================================
 
 void Simulator::runComparative() {
-    int num_threads = config.numThreads;
     BoardInfo board_info;
     if (!readBoard(config.gameMapFile, board_info)) {
         std::cout << "Usage: Map file couldn't be read successfully" << std::endl;
@@ -253,6 +252,10 @@ void Simulator::runComparative() {
     }
     int game_managers_size = GameManagerRegistrar::getGameManagerRegistrar().count();
     std::vector<GameResult> results(game_managers_size);
+    int num_threads = config.numThreads;
+    if (num_threads > game_managers_size) {
+        num_threads = game_managers_size; // So that there wouldn't be unecessary amount of threads
+    }
     if (num_threads == 1) {
         runComparativeThread(0, num_threads, game_managers_size, std::ref(results), std::ref(board_info));
     }
@@ -358,12 +361,12 @@ void Simulator::printComparativeOutput(std::vector<GameResult>& results, std::ve
     std::cout << "game_map=" << extractBaseName(config.gameMapFile) << std::endl;
     std::cout << "algorithm1=" << extractBaseName(config.algorithm1) << std::endl;
     std::cout << "algorithm2=" << extractBaseName(config.algorithm2) << std::endl;
-    std::cout << std::endl;
     for (std::vector<int>& group : grouped_results){
         if (group.empty()){
             break;
         }
         else {
+            std::cout << std::endl;
             std::cout << line5(group) << std::endl;
             int result_index = group.back();
             std::cout << line6(results[result_index]) << std::endl;
