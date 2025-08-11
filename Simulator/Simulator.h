@@ -29,6 +29,7 @@ struct BoardInfo {
     size_t max_steps = 0;
     size_t num_shells = 0;
     UserCommon_322996059_211779582::MySatelliteView map;
+    std::string map_name;
 };
 
 class Simulator {
@@ -63,6 +64,12 @@ private:
     // Competitive function
     void runCompetitive();
     // runCompetitive helper functions:
+    void runCompetitiveThread(int thread_id, int num_threads, int maps_size, int algorithms_size, std::vector<GameResult>& results, std::vector<BoardInfo>& maps);
+    std::vector<std::pair<std::string, int>> getAlgorithmScores(std::vector<GameResult>& results, int algorithms_size, int maps_size);
+    std::vector<BoardInfo> readMapsFolder(const std::string& folderPath);
+    void writeCompetitiveOutput(std::vector<std::pair<std::string, int>> scores);
+    void printCompetitiveOutput(std::vector<std::pair<std::string, int>> scores);
+
 
 
     // Reading board function
