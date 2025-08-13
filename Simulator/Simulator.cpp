@@ -277,8 +277,6 @@ void Simulator::runComparative() {
           [](const std::vector<int>& a, const std::vector<int>& b) {
               return a.size() > b.size(); // descending order
           });
-    std::cout << "first: " << grouped_results[0][0] << std::endl; // TODO - delete
-    std::cout << "second: " << grouped_results[1][0] << std::endl; // TODO - delete
     writeComparativeOutput(results, grouped_results, board_info.map_width, board_info.map_height);
 }
 
@@ -287,18 +285,14 @@ void Simulator::runComparativeThread(int thread_id, int num_threads, int game_ma
     auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
     // Default to first algorithm; if two are registered, use the second for the second player
     auto algorithm1_registrar_entry = algorithm_registrar.at(0);
-    auto algorithm2_registrar_entry = algorithm_registrar.at(0);
-    if (algorithm_registrar.count() == 2) {
-        algorithm2_registrar_entry = algorithm_registrar.at(1);
-    }
-    std::unique_ptr<Player> player1 = algorithm1_registrar_entry.createPlayer(1,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
-    std::unique_ptr<Player> player2 = algorithm2_registrar_entry.createPlayer(2,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
-    TankAlgorithmFactory player1_tank_algo_factory = algorithm1_registrar_entry.getTankAlgorithmFactory();
-    TankAlgorithmFactory player2_tank_algo_factory = algorithm2_registrar_entry.getTankAlgorithmFactory();
+    auto algorithm2_registrar_entry = algorithm_registrar.at(1);
 
     for (int i = thread_id; i < game_managers_size; i += num_threads) {
-        std::cout << "Thread ID: " << std::this_thread::get_id() << ", GameManager index: " << i << std::endl; // TODO - delete
         auto game_manager_registrar_entry = game_manager_registrar.at(i);
+        std::unique_ptr<Player> player1 = algorithm1_registrar_entry.createPlayer(1,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
+        std::unique_ptr<Player> player2 = algorithm2_registrar_entry.createPlayer(2,board_info.map_width, board_info.map_height, board_info.max_steps, board_info.num_shells);
+        TankAlgorithmFactory player1_tank_algo_factory = algorithm1_registrar_entry.getTankAlgorithmFactory();
+        TankAlgorithmFactory player2_tank_algo_factory = algorithm2_registrar_entry.getTankAlgorithmFactory();
         std::unique_ptr<AbstractGameManager> game_manager = game_manager_registrar_entry.createGameManager(config.verbose);
         std::string map_name = extractBaseName(config.gameMapFile);
         std::string name1 = extractBaseName(config.algorithm1);
@@ -475,6 +469,7 @@ std::string Simulator::line6(const GameResult& result){
         if (algorithms_size % 2 == 0 && map_index == algorithms_size/2-1 && algorithm1_index >= algorithms_size/2) {
             GameResult result;
             result.winner = -1; // Indicating that this game is not played
+            results[i] = std::move(result);
             continue;
         }
         

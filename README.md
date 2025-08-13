@@ -18,5 +18,6 @@ At each step, we first ask all the tanks for their actions. Then we move all the
 What happens when two objects colide:
     If two or more objects (excpet walls) end up in the same square - then all the objects on that square are destroyed.
     If two objects are passing through each other (meaning they are meeting each other "between the squares") - then only they are destroyed.
+
 4.
     If two tanks standing next to each other, shoot at each other - then only the bullets will be destroyed, and the tanks wouldn't (aligned with the second condition in clause 3).
