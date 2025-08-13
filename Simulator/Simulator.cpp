@@ -285,7 +285,10 @@ void Simulator::runComparativeThread(int thread_id, int num_threads, int game_ma
     auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
     // Default to first algorithm; if two are registered, use the second for the second player
     auto algorithm1_registrar_entry = algorithm_registrar.at(0);
-    auto algorithm2_registrar_entry = algorithm_registrar.at(1);
+    auto algorithm2_registrar_entry = algorithm_registrar.at(0);
+    if (algorithm_registrar.count() == 2) {
+        algorithm2_registrar_entry = algorithm_registrar.at(1);
+    }
 
     for (int i = thread_id; i < game_managers_size; i += num_threads) {
         auto game_manager_registrar_entry = game_manager_registrar.at(i);
