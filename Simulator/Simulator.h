@@ -40,9 +40,6 @@ public:
     Simulator(SimulationConfig config);
     void run();
 
-    // Debug Functions:
-    bool debugBattle(std::string map_file, std::string so_path_game_manager, std::string so_path_algorithm1, std::string so_path_algorithm2);
-
 private:
     // Functions for loading and unloading all the .so files
     bool loadSharedLibraries(); // Return false if failed

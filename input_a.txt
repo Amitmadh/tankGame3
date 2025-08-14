@@ -1,9 +1,0 @@
-SurroundedByMines
-MaxSteps=200
-NumShells=20
-Rows=4
-Cols=7
-#@@@###
-#@2@@@#
- @@@1@#
-####@@#
