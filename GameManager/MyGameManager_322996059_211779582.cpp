@@ -252,15 +252,15 @@ GameResult MyGameManager_322996059_211779582::run(
 
     initializeGameBoard(map, player1_tank_algo_factory, player2_tank_algo_factory);
 
+    // Initializing step_output_messages
+    output_messages.resize(number_of_total_tanks);
+
     // Checking the starting winning conditions
     checkStartingWinningCondition();
     if(should_exit){
         resetState();
         return std::move(game_result);
     }
-    
-    // Initializing step_output_messages
-    output_messages.resize(number_of_total_tanks);
 
     runGame();
     

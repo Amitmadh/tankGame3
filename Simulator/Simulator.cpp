@@ -433,6 +433,10 @@ std::string Simulator::line6(const GameResult& result){
         std::cout << "Usage: Algorithm folder contain less than 2 algorithms" << std::endl;
         return;
     }
+    if (maps_size == 0) {
+        std::cout << "Usage: Maps folder does not have any valid maps" << std::endl;
+        return;
+    }
     std::vector<GameResult> results(maps_size * algorithms_size);
     int num_threads = config.numThreads;
     if (num_threads > maps_size * algorithms_size) {
