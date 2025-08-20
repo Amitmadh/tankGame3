@@ -247,7 +247,7 @@ GameResult MyGameManager_322996059_211779582::run(
     width, std::vector<std::vector<GameObject*>>(height));
 
     if(verbose){ // initializing the output file name
-        output_file_name = "output_" + map_name + "_" + name1 + "_" + name2 + "_" + generateTimeBasedString() + ".txt"; // TODO
+        output_file_name = "output_" + extractBaseNameFromPath(map_name) + "_" + extractBaseNameFromPath(name1) + "_" + extractBaseNameFromPath(name2) + "_" + generateTimeBasedString() + ".txt"; // TODO
     }
 
     initializeGameBoard(map, player1_tank_algo_factory, player2_tank_algo_factory);
@@ -847,6 +847,19 @@ void MyGameManager_322996059_211779582::writeStepActions() const{
     }
     writeToOutputFile(result);
     return;
+}
+
+std::string MyGameManager_322996059_211779582::extractBaseNameFromPath(const std::string& path) {
+    // Find last slash
+    size_t slash_pos = path.find_last_of("/\\");
+    size_t start = (slash_pos == std::string::npos) ? 0 : slash_pos + 1;
+
+    // Find last dot
+    size_t dot_pos = path.find_last_of('.');
+    size_t end = (dot_pos == std::string::npos || dot_pos < start) ? path.size() : dot_pos;
+
+    // Return substring between them
+    return path.substr(start, end - start);
 }
 
 

@@ -141,6 +141,7 @@ private:
 
     //  Writing to output file
     void writeToOutputFile(const std::string& content) const;
+    std::string extractBaseNameFromPath(const std::string& path);
 
     // Initialize the step_output_messages
     void initializeOutputMessages();
