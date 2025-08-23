@@ -192,7 +192,7 @@ int Simulator::dlopenFolder(const std::string& folderPath, bool for_game_manager
     if (for_game_manager){
         auto& game_manager_registrar = GameManagerRegistrar::getGameManagerRegistrar();
         game_manager_registrar.createGameManagerFactoryEntry(filePath);
-        void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
+        void* handle = dlopen(filePath.c_str(), RTLD_NOW);
         if (!handle) {
             appendToFile("input_errors.txt", "Failed to load the following .so file - " + filePath + ": " + dlerror());
             game_manager_registrar.removeLast();
@@ -210,7 +210,7 @@ int Simulator::dlopenFolder(const std::string& folderPath, bool for_game_manager
     } else {
         auto& algorithm_registrar = AlgorithmRegistrar::getAlgorithmRegistrar();
         algorithm_registrar.createAlgorithmFactoryEntry(filePath);
-        void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
+        void* handle = dlopen(filePath.c_str(), RTLD_NOW);
         if (!handle) {
             appendToFile("input_errors.txt", "Failed to load the following .so file - " + filePath + ": " + dlerror());
             algorithm_registrar.removeLast();
